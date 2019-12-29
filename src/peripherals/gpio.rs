@@ -50,9 +50,9 @@ pub struct physical_pins<'a>{
 impl Default for physical_pins<'_>{
 
     fn default()->Self{
-
+     let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
      Self{
-       states: GpioPinArr([State::Disabled; GpioPin::NUM_PINS]),
+       states: GpioPinArr(states_init),
        flags: GpioPinArr([None; GpioPin::NUM_PINS]),
        mapping: vec![
 
@@ -71,19 +71,29 @@ fn sys_init() -> tm4c123x_hal::sysctl::Sysctl{
 }
 
 fn init_pins() -> physical_pins<'static>{
+    let mut phys_default = physical_pins::default();
+    //println!("?{}", phys_default);
     let p_st = Peripherals::take().unwrap();
     let mut sc = sys_init();
     let mut porta = p_st.GPIO_PORTA.split(&sc.power_control);
-    let gpioa0 = porta.pa0.into_push_pull_output();
-    let gpioa1 = porta.pa1.into_push_pull_output();
-    let gpioa2 = porta.pa2.into_push_pull_output();
-    let gpioa3 = porta.pa3.into_push_pull_output();
+    let mut gpioa0 = porta.pa0.into_push_pull_output();
+    gpioa0.set_low();
+    let mut gpioa1 = porta.pa1.into_push_pull_output();
+    gpioa1.set_low();
+    let mut gpioa2 = porta.pa2.into_push_pull_output();
+    gpioa2.set_low();
+    let mut gpioa3 = porta.pa3.into_push_pull_output();
+    gpioa3.set_low();
  
     let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
-    let gpioe0 = porte.pe0.into_pull_up_input();
-    let gpioe1 = porte.pe1.into_pull_up_input();
-    let gpioe2 = porte.pe2.into_pull_up_input();
-    let gpioe3 = porte.pe3.into_pull_up_input();   
+    let mut gpioe0 = porte.pe0.into_pull_up_input();
+ //   gpioe0.set_low();            //input - no init state                        
+    let mut gpioe1 = porte.pe1.into_pull_up_input();
+  //  gpioe1.set_low();
+    let mut gpioe2 = porte.pe2.into_pull_up_input();
+  //  gpioe2.set_low();
+    let mut gpioe3 = porte.pe3.into_pull_up_input();   
+   // gpioe3.set_low();
 
     let pin_mapping = vec![
 
@@ -98,8 +108,8 @@ fn init_pins() -> physical_pins<'static>{
     ];
 
        physical_pins{
-       states: GpioPinArr([State::Disabled; GpioPin::NUM_PINS]),
-       flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+       states: phys_default.states,
+       flags: phys_default.flags,
        mapping: pin_mapping
        }
 
