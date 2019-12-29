@@ -1,5 +1,6 @@
 use core::ops::{Index, IndexMut};
 use core::sync::atomic::{AtomicBool, Ordering};
+use core::marker::PhantomData;
 use lc3_traits::peripherals::gpio::GpioState::Interrupt;
 use lc3_traits::peripherals::gpio::{
     Gpio, GpioMiscError, GpioPin, GpioPinArr, GpioReadError, GpioState, GpioWriteError,
@@ -8,6 +9,7 @@ use lc3_traits::peripherals::gpio::{
 use tm4c123x_hal::gpio::{gpioa::*, gpioe::*};
 use tm4c123x_hal::gpio::*;
 use tm4c123x_hal::{Peripherals, prelude::*};
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
     Input(bool),
@@ -121,7 +123,7 @@ pub struct GpioShim<'a> {
     flags: GpioPinArr<Option<&'a AtomicBool>>,
 }
 
-impl Index<GpioPin> for GpioShim<'_> {
+impl Index<GpioPin> for physical_pins<'_> {
     type Output = State;
 
     fn index(&self, pin: GpioPin) -> &State {
@@ -129,17 +131,261 @@ impl Index<GpioPin> for GpioShim<'_> {
     }
 }
 
-impl IndexMut<GpioPin> for GpioShim<'_> {
+impl IndexMut<GpioPin> for physical_pins<'_> {
     fn index_mut(&mut self, pin: GpioPin) -> &mut State {
         &mut self.states[pin]
     }
 }
 
-impl Default for GpioShim<'_> {
-    fn default() -> Self {
-        Self {
-            states: GpioPinArr([State::Disabled; GpioPin::NUM_PINS]),
-            flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+
+//SOME NOTES: This current implementation approach is very verbose due to a subtle ownership issue. TODO: Wrap into a macro, or take a different approach to the ownership.
+// Also VERY IMPORTANT: Make the self[pin] update and the actual physical pin update atomic. To wrap in lock.
+
+impl physical_pins<'_> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    // pub fn new_shared() -> Arc<RwLock<Self>> {
+    //     Arc::<RwLock<Self>>::default()
+    // }
+
+    /// Sets a pin if it's in input or interrupt mode.
+    ///
+    /// Returns `Some(())` on success and `None` on failure.
+    pub fn set_pin(&mut self, pin: GpioPin, bit: bool) -> Option<()> {
+        use State::*;
+        use physical_pin_mappings::*;
+
+        match self[pin] {
+            Input(_) => {
+                self[pin]=Input(bit);
+                let mut x = usize::from(pin);
+                match x{
+                    0 => {let y = self.mapping.remove(0);
+                            match y{
+                                GPIO0(mut vb) => {if bit { vb.set_high(); } else { vb.set_low(); };},
+                                _ => {},
+                            }
+
+                    },
+                    1 => {let y = self.mapping.remove(1);
+                            match y{
+                                GPIO1(mut vb) => {
+                                
+                                if bit { vb.set_high(); } else { vb.set_low(); };
+                                self.mapping.insert(1, GPIO1(vb));
+                                },
+                           
+                                _ => {},
+                            }
+
+
+                    },
+                    2 => {let y = self.mapping.remove(2);
+                            match y{
+                                GPIO2(mut vb) => {if bit { vb.set_high(); } else { vb.set_low(); };
+                                self.mapping.insert(2, GPIO2(vb));
+                               },
+                                _ => {},
+                            }
+
+                    },
+                    3 => {let y = self.mapping.remove(3);
+                            match y{
+                                GPIO3(mut vb) => {if bit { vb.set_high(); } else { vb.set_low(); };
+                                self.mapping.insert(3, GPIO3(vb));
+                               },
+                                _ => {},
+                            }
+
+                    },
+                    4 => {let y = self.mapping.remove(4);
+                            match y{
+                                GPIO4(mut vb) => {},
+                                _ => {},
+                            }
+
+                    },
+                    5 => {let y = self.mapping.remove(5);
+                            match y{
+                                GPIO5(mut vb) => {},
+                                _ => {},
+                            }
+
+                    },
+                    6 => {let y = self.mapping.remove(6);
+                            match y{
+                                GPIO6(mut vb) => {},
+                                _ => {},
+                            }
+
+                    },
+                    7 => {let y = self.mapping.remove(7);
+                            match y{
+                                GPIO7(mut vb) => {},
+                                _ => {},
+                            }
+
+                    },
+                    _ => {},
+                    // physical_pin_mappings::GPIO0(y) => {let mut res  = PA0<Output<>>{_mode: PhantomData};},
+
+                };
+
+
+            },
+            Interrupt(prev) => {
+                // Rising edge!
+                if bit && !prev {
+                    self.raise_interrupt(pin)
+                }
+
+               // Interrupt(bit)
+            }
+            Output(_) | Disabled => return None,
+         };
+
+        Some(())
+    }
+
+    fn raise_interrupt(&self, pin: GpioPin) {
+        match self.flags[pin] {
+            Some(flag) => flag.store(true, Ordering::SeqCst),
+            None => unreachable!(),
         }
+    }
+
+    /// Gets the value of a pin.
+    ///
+    /// Returns `None` when the pin is disabled.
+    pub fn get_pin(&self, pin: GpioPin) -> Option<bool> {
+        use State::*;
+
+        match self[pin] {
+            Input(b) | Output(b) | Interrupt(b) => Some(b),
+            Disabled => None,
+        }
+    }
+
+    /// Gets the state of a pin. Infallible.
+    pub fn get_pin_state(&self, pin: GpioPin) -> GpioState {
+        self[pin].into()
+    }
+}
+
+impl<'a> Gpio<'a> for physical_pins<'a> {
+    fn set_state(&mut self, pin: GpioPin, state: GpioState) -> Result<(), GpioMiscError> {
+        use GpioState::*;
+            match state {
+            Input => {
+            self[pin]=State::Input(false);
+                //self[pin]=State::Output(false);
+                match pin{
+                G0 => {
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_pull_up_input();},
+                G1 => {
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_pull_up_input();},
+                G2 =>{
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_pull_up_input();},
+                G3 =>{
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_pull_up_input();},
+                G4 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_pull_up_input();},
+                G5 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_pull_up_input();},
+                G6 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_pull_up_input();},
+                G7 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();},
+                }
+
+             },
+            Output => {
+                self[pin]=State::Output(false);
+                match pin{
+                G0 => {
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_push_pull_output();},
+                G1 => {
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_push_pull_output();},
+                G2 =>{
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_push_pull_output();},
+                G3 =>{
+                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_push_pull_output();},
+                G4 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_push_pull_output();},
+                G5 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_push_pull_output();},
+                G6 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_push_pull_output();},
+                G7 =>{
+                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();},
+                }
+            },
+            Interrupt => {
+                self[pin]=State::Interrupt(false)
+            },
+            Disabled => {
+                self[pin]=State::Disabled
+            },
+        };
+
+        Ok(())
+    }
+
+    fn get_state(&self, pin: GpioPin) -> GpioState {
+        self.get_pin_state(pin)
+    }
+
+    fn read(&self, pin: GpioPin) -> Result<bool, GpioReadError> {
+        use State::*;
+
+        if let Input(b) | Interrupt(b) = self[pin] {
+            Ok(b)
+        } else {
+            Err(GpioReadError((pin, self[pin].into())))
+        }
+    }
+
+    fn write(&mut self, pin: GpioPin, bit: bool) -> Result<(), GpioWriteError> {
+        use State::*;
+
+        if let Output(_) = self[pin] {
+            self[pin] = Output(bit);
+            Ok(())
+        } else {
+            Err(GpioWriteError((pin, self[pin].into())))
+        }
+    }
+
+    // TODO: decide functionality when no previous flag registered
+    fn register_interrupt_flag(&mut self, pin: GpioPin, flag: &'a AtomicBool) {
+        self.flags[pin] = match self.flags[pin] {
+            None => Some(flag),
+            Some(_) => unreachable!(),
+        }
+    }
+
+    fn interrupt_occurred(&self, pin: GpioPin) -> bool {
+        match self.flags[pin] {
+            Some(flag) => {
+                let occurred = flag.load(Ordering::SeqCst);
+                self.interrupts_enabled(pin) && occurred
+            }
+            None => unreachable!(),
+        }
+    }
+
+    // TODO: decide functionality when no previous flag registered
+    fn reset_interrupt_flag(&mut self, pin: GpioPin) {
+        match self.flags[pin] {
+            Some(flag) => flag.store(false, Ordering::SeqCst),
+            None => unreachable!(),
+        }
+    }
+
+    // TODO: make this default implementation?
+    fn interrupts_enabled(&self, pin: GpioPin) -> bool {
+        self.get_state(pin) == Interrupt
     }
 }
