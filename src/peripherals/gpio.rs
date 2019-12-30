@@ -449,21 +449,47 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 //self[pin]=State::Output(false);
                 match pin{
                 G0 => {
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_pull_up_input();},
+                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_pull_up_input();
+                self.mapping2.remove(0);
+                self.mapping2.insert(0, PhysicalPins::g0(State2::Input(handle)));
+                },
                 G1 => {
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_pull_up_input();},
+                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_pull_up_input();
+                self.mapping2.remove(1);
+                self.mapping2.insert(1, PhysicalPins::g1(State2::Input(handle)));
+               },
                 G2 =>{
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_pull_up_input();},
+                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_pull_up_input();
+                self.mapping2.remove(2);
+                self.mapping2.insert(2, PhysicalPins::g2(State2::Input(handle)));
+               },
                 G3 =>{
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_pull_up_input();},
+                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_pull_up_input();
+                self.mapping2.remove(3);
+                self.mapping2.insert(3, PhysicalPins::g3(State2::Input(handle)));
+            },
                 G4 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_pull_up_input();},
+                let handle = Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_pull_up_input();
+                self.mapping2.remove(4);
+                self.mapping2.insert(4, PhysicalPins::g4(State2::Input(handle)));
+            },
                 G5 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_pull_up_input();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_pull_up_input();
+                self.mapping2.remove(5);
+                self.mapping2.insert(5, PhysicalPins::g5(State2::Input(handle)));
+
+            },
                 G6 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_pull_up_input();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_pull_up_input();
+                self.mapping2.remove(6);
+                self.mapping2.insert(6, PhysicalPins::g6(State2::Input(handle)));
+
+            },
                 G7 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_pull_up_input();
+                self.mapping2.remove(7);
+                self.mapping2.insert(7, PhysicalPins::g7(State2::Input(handle)));
+            },
                 }
 
              },
@@ -471,21 +497,45 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 self[pin]=State::Output(false);
                 match pin{
                 G0 => {
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_push_pull_output();
+                self.mapping2.remove(0);
+                self.mapping2.insert(0, PhysicalPins::g0(State2::Output(handle)));
+            },
                 G1 => {
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_push_pull_output();
+                self.mapping2.remove(1);
+                self.mapping2.insert(1, PhysicalPins::g1(State2::Output(handle)));
+            },
                 G2 =>{
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_push_pull_output();
+                self.mapping2.remove(2);
+                self.mapping2.insert(2, PhysicalPins::g2(State2::Output(handle)));
+            },
                 G3 =>{
-                Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_push_pull_output();
+                self.mapping2.remove(3);
+                self.mapping2.insert(3, PhysicalPins::g3(State2::Output(handle)));
+            },
                 G4 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_push_pull_output();
+                self.mapping2.remove(4);
+                self.mapping2.insert(4, PhysicalPins::g4(State2::Output(handle)));
+            },
                 G5 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_push_pull_output();
+                self.mapping2.remove(5);
+                self.mapping2.insert(5, PhysicalPins::g5(State2::Output(handle)));
+            },
                 G6 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_push_pull_output();
+                self.mapping2.remove(6);
+                self.mapping2.insert(6, PhysicalPins::g6(State2::Output(handle)));
+            },
                 G7 =>{
-                Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();},
+                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();
+                self.mapping2.remove(7);
+                self.mapping2.insert(7, PhysicalPins::g7(State2::Output(handle)));
+            },
                 }
             },
             Interrupt => {
