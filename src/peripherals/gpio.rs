@@ -11,7 +11,7 @@ use tm4c123x_hal::gpio::*;
 use tm4c123x_hal::gpio::{};
 use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x_hal::{prelude::_embedded_hal_digital_InputPin, prelude::_embedded_hal_digital_OutputPin};
-
+use tm4c123x_hal::timer;
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
     Input(bool),

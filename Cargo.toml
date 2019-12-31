@@ -14,10 +14,12 @@ lc3-traits = { path = "../traits", version = "0.1.0", default-features = false }
 byteorder = "1.3.2"
 timer = "0.2.0"
 time = "0.1.42"
-tm4c123x-hal = "0.8.0"
+tm4c123x-hal = {path="../tm4c-hal/tm4c123x-hal",version= "0.10.0"}
 embedded-hal = "0.2.3"
 
 [features]
 default = []
 no_std = []
 std_functionality = []
+
+
