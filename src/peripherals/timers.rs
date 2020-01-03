@@ -21,6 +21,11 @@ use tm4c123x_hal::sysctl::Clocks;
     T0(Timer<TIMER0>),
     T1(Timer<TIMER1>)
  }
+
+ // pub system_clock: tm4c123x_hal::sysctl::Sysctl = {
+   
+ //    tm4c123x_hal::Peripherals::take().unwrap().SYSCTL.constrain()
+ // };
 // The term “Single Shot” signifies a single pulse output of some duration.
  pub struct TimersShim<'a> {
      states: TimerArr<TimerState>,
@@ -28,9 +33,22 @@ use tm4c123x_hal::sysctl::Clocks;
      phys_timers: Vec<PhysicalTimers>,
      flags: TimerArr<Option<&'a AtomicBool>>,
      clock_setup: [u32; 2],
+
      //timer_struct: [Timer; 2]
      //guards: TimerArr<Option<timer::Guard>>,
  }
+
+ // fn initialize_system_clock() -> &'static tm4c123x_hal::sysctl::Sysctl{
+ //    let p = tm4c123x_hal::Peripherals::take().unwrap();
+
+ //    let mut sc = p.SYSCTL.constrain();
+ //    sc.clock_setup.oscillator = tm4c123x_hal::sysctl::Oscillator::Main(
+ //        tm4c123x_hal::sysctl::CrystalFrequency::_16mhz,
+ //        tm4c123x_hal::sysctl::SystemClock::UsePll(tm4c123x_hal::sysctl::PllOutputFrequency::_20mhz),
+ //    );
+ //    let clocks = sc.clock_setup.freeze();
+ //    &sc
+ // }
 
  impl Default for TimersShim<'_> {
      fn default() -> Self {
@@ -54,7 +72,7 @@ use tm4c123x_hal::sysctl::Clocks;
 //             guards: TimerArr([None, None]),
 
              phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
-             clock_setup: [80000000, 80000000]
+             clock_setup: [80000000, 80000000],
          }
      }
  }
@@ -67,32 +85,8 @@ use tm4c123x_hal::sysctl::Clocks;
 
  impl<'a> Timers<'a> for TimersShim<'a> {
      fn set_state(&mut self, timer: TimerId, state: TimerState) -> Result<(), TimerMiscError> {
-//         use TimerState::*;
-//         self.states[timer] = match state {
-//             Repeated => {
-//                 match self.guards[timer] {
-//                     Some(_) => {
-//                         // let g = self.guards[timer].take().unwrap();
-//                         // drop(g);
-//                         // // drop(x);
-//                          state
-//                     }
-//                     None => state,
-//                 }
-//             }
-//             SingleShot => {
-//                 match self.guards[timer] {
-//                     Some(_) => {
-//                         // let g = self.guards[timer].take().unwrap();
-//                         // drop(g);
-//                         // //drop(x);
-//                         state
-//                     }
-//                     None => state,
-//                 }
-//             }
-//             Disabled => state,
-//         };
+        use TimerState::*;
+        self.states[timer] = state;
 
          Ok(())
      }
@@ -114,13 +108,13 @@ use tm4c123x_hal::sysctl::Clocks;
                 let curr_timer = self.phys_timers.remove(0);
                 match curr_timer{
                 PhysicalTimers::T0(mut v) =>{
-                  let clk_freq = self.clock_setup[0];
-                  let tp_millis = (1/clk_freq)*1000;
-                  let divider = (milliseconds as u32)/tp_millis;
-                  let ticks_new = clk_freq/divider;
+                  // let clk_freq = self.clock_setup[0];
+                  // let tp_millis = (1/clk_freq)*1000;
+                  // let divider = (milliseconds as u32)/tp_millis;
+                  // let ticks_new = clk_freq/divider;
 
-                   Peripherals::take().unwrap().TIMER0.tav.write(|w| unsafe { w.bits(ticks_new) });
-                   Peripherals::take().unwrap().TIMER0.tailr.write(|w| unsafe { w.bits(ticks_new) });
+                   Peripherals::take().unwrap().TIMER0.tav.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_setup[0] as f32)) });
+                   Peripherals::take().unwrap().TIMER0.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_setup[0] as f32)) });
 
                     // // start counter
                     Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
@@ -132,7 +126,25 @@ use tm4c123x_hal::sysctl::Clocks;
             }
              }
 
-             T1 => {}
+             T1 => {
+                let curr_timer = self.phys_timers.remove(0);
+                match curr_timer{
+                PhysicalTimers::T1(mut v) =>{
+
+
+                   Peripherals::take().unwrap().TIMER1.tav.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_setup[1] as f32)) });
+                   Peripherals::take().unwrap().TIMER1.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_setup[1] as f32)) });
+
+                    // // start counter
+                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                        w.taen().set_bit()
+                    );
+                    self.phys_timers.insert(0,PhysicalTimers::T1(v));
+                }
+                _=> {}
+            }
+      
+             }
 
            }
        //   let sys_sp = self.phys_timers[T0].clocks;
@@ -232,6 +244,18 @@ use tm4c123x_hal::sysctl::Clocks;
             Disabled => false,
         }
     }
+ }
+
+
+ fn ticks_to_millis (ticks: f32, freq: f32)->u32{
+    ((1.0/freq)*ticks*1000.0) as u32    // enable fpu on board for this part; better accuracy
+
+ }
+
+ fn millis_to_ticks (millis: f32, freq: f32)->u32{
+    //TODO check for valid parameter ranges ^
+    ((millis/1000.0)/(1.0/freq)) as u32  //assumes 1 tick per clock cycle which is default. I see no reason to use different divider
+
  }
 
 // // #[cfg(test)]
