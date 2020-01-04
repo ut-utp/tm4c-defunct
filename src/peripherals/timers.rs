@@ -134,6 +134,29 @@ use tm4c123x_hal::sysctl::Clocks;
  impl<'a> Timers<'a> for TimersShim<'a> {
      fn set_state(&mut self, timer: TimerId, state: TimerState) -> Result<(), TimerMiscError> {
         use TimerState::*;
+
+        match state{
+            Disabled => {
+                match timer{
+                    T0 =>{
+                         Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
+                    w.taen().clear_bit()
+                    .tben().clear_bit()
+                    );                   
+                    }
+
+                    T1 => {
+                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                    w.taen().clear_bit()
+                    .tben().clear_bit()
+                    );
+                    }
+                }
+
+            }
+
+            _ => {}   // it's periodic by default
+        }
         self.states[timer] = state;
 
          Ok(())
@@ -161,6 +184,12 @@ use tm4c123x_hal::sysctl::Clocks;
                   // let divider = (milliseconds as u32)/tp_millis;
                   // let ticks_new = clk_freq/divider;
 
+
+                  // Disable before making changes
+                    Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
+                    w.taen().clear_bit()
+                    .tben().clear_bit()
+                    );
                    Peripherals::take().unwrap().TIMER0.tav.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
                    Peripherals::take().unwrap().TIMER0.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
 
@@ -180,6 +209,10 @@ use tm4c123x_hal::sysctl::Clocks;
                 PhysicalTimers::T1(mut v) =>{
 
 
+                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                    w.taen().clear_bit()
+                    .tben().clear_bit()
+                    );
                    Peripherals::take().unwrap().TIMER1.tav.write(|w| unsafe {  w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
                    Peripherals::take().unwrap().TIMER1.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
 
