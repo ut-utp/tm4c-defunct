@@ -17,7 +17,7 @@ fn main() -> ! {
 let mut sc = p.SYSCTL.constrain();
 
 
-
+  hprintln!("Hellkmknjo, worldjhjh!").unwrap();
     sc.clock_setup.oscillator = hal::sysctl::Oscillator::Main(
         hal::sysctl::CrystalFrequency::_16mhz,
         hal::sysctl::SystemClock::UsePll(hal::sysctl::PllOutputFrequency::_20mhz),
@@ -54,6 +54,6 @@ let mut sc = p.SYSCTL.constrain();
     // exit QEMU
     // NOTE do not run this on hardware; it can corrupt OpenOCD state
     debug::exit(debug::EXIT_SUCCESS);
-
+    
     loop {}
 }
