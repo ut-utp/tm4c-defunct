@@ -34,7 +34,7 @@ use tm4c123x_hal::sysctl::Clocks;
      flags: TimerArr<Option<&'a AtomicBool>>,
      //system_clock: tm4c123x_hal::sysctl::Sysctl,
      clock_freq: u32,
-     power: tm4c123x_hal::sysctl::PowerControl
+     //power: tm4c123x_hal::sysctl::PowerControl
      //sys_config: (u32, tm4c123x_hal::sysctl::PowerControl)
      //timer_struct: [Timer; 2]
 
@@ -54,7 +54,8 @@ use tm4c123x_hal::sysctl::Clocks;
  // }
 
  impl Default for TimersShim<'_> {
-     fn default() -> Self {
+
+    fn default()->Self{
             let t1 = Peripherals::take().unwrap().TIMER0;
         let mut sc = Peripherals::take().unwrap().SYSCTL.constrain();
     sc.clock_setup.oscillator = tm4c123x_hal::sysctl::Oscillator::Main(
@@ -84,15 +85,50 @@ use tm4c123x_hal::sysctl::Clocks;
 
              phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
              clock_freq: freq,
-             power: sc.power_control
-         }
-     }
+             //power: sc.power_control
+         }                
+
+    }
+
  }
 
  impl TimersShim<'_> {
-     pub fn new() -> Self {
-         Self::default()
+
+     pub fn new(system_config: &'static tm4c123x_hal::sysctl::Sysctl, frozen_clock: &'static tm4c123x_hal::sysctl::Clocks) -> Self {
+
+             let t1 = Peripherals::take().unwrap().TIMER0;
+    //     let mut sc = Peripherals::take().unwrap().SYSCTL.constrain();
+    // sc.clock_setup.oscillator = tm4c123x_hal::sysctl::Oscillator::Main(
+    //     tm4c123x_hal::sysctl::CrystalFrequency::_16mhz,
+    //     tm4c123x_hal::sysctl::SystemClock::UsePll(tm4c123x_hal::sysctl::PllOutputFrequency::_20mhz),
+    // );
+    //let clock = sc.clock_setup.freeze();  // changeable or are the frequencies fixed?
+    let hz = (*frozen_clock).sysclk;
+    let tm4c123x_hal::time::Hertz(freq) = hz;
+    let time_init1 = tm4c123x_hal::timer::Timer::timer0::<MegaHertz>(
+        t1,
+        MegaHertz(80),
+        &((*system_config).power_control),
+        frozen_clock,
+    );
+    let time_init2 = tm4c123x_hal::timer::Timer::timer1::<MegaHertz>(
+        Peripherals::take().unwrap().TIMER1,
+        MegaHertz(80),
+        &((*system_config).power_control),
+        frozen_clock,
+    );
+         Self {
+             states: TimerArr([TimerState::Disabled; TimerId::NUM_TIMERS]),
+             times: TimerArr([0u16; TimerId::NUM_TIMERS]), // unlike gpio, interrupts occur on time - not on bit change
+             flags: TimerArr([None; TimerId::NUM_TIMERS]),
+//             guards: TimerArr([None, None]),
+
+             phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
+             clock_freq: freq,
+             //power: sc.power_control
+         }
      }
+     
  }
 
  impl<'a> Timers<'a> for TimersShim<'a> {
@@ -151,7 +187,7 @@ use tm4c123x_hal::sysctl::Clocks;
                     Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
                         w.taen().set_bit()
                     );
-                    self.phys_timers.insert(0,PhysicalTimers::T1(v));
+                    self.phys_timers.insert(1,PhysicalTimers::T1(v));
                 }
                 _=> {}
             }
