@@ -7,7 +7,7 @@ use lc3_traits::peripherals::timers::{
 use lc3_isa::Word;
 //use std::time::Duration;
 use core::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering;
+//use std::sync::atomic::Ordering;
 use tm4c123x_hal::{timer, timer::*, timer::Timer, time::*};
 use tm4c123x_hal::tm4c123x::{TIMER0, TIMER1};
 use core::marker::PhantomData;
@@ -30,7 +30,7 @@ use tm4c123x_hal::sysctl::Clocks;
  pub struct TimersShim<'a> {
      states: TimerArr<TimerState>,
      times: TimerArr<Word>,
-     phys_timers: Vec<PhysicalTimers>,
+     //phys_timers: Vec<PhysicalTimers>,
      flags: TimerArr<Option<&'a AtomicBool>>,
      //system_clock: tm4c123x_hal::sysctl::Sysctl,
      clock_freq: u32,
@@ -83,7 +83,7 @@ use tm4c123x_hal::sysctl::Clocks;
              flags: TimerArr([None; TimerId::NUM_TIMERS]),
 //             guards: TimerArr([None, None]),
 
-             phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
+             //phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
              clock_freq: freq,
              //power: sc.power_control
          }                
@@ -123,7 +123,7 @@ use tm4c123x_hal::sysctl::Clocks;
              flags: TimerArr([None; TimerId::NUM_TIMERS]),
 //             guards: TimerArr([None, None]),
 
-             phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
+           //  phys_timers: vec![PhysicalTimers::T0(time_init1), PhysicalTimers::T1(time_init2)],
              clock_freq: freq,
              //power: sc.power_control
          }
@@ -176,9 +176,10 @@ use tm4c123x_hal::sysctl::Clocks;
           self.times[timer] = milliseconds;
            match timer{
              T0 => {
-                let curr_timer = self.phys_timers.remove(0);
-                match curr_timer{
-                PhysicalTimers::T0(mut v) =>{
+               // let curr_timer = self.phys_timers.remove(0);
+               // match curr_timer{
+
+                //PhysicalTimers::T0(mut v) =>{
                   // let clk_freq = self.clock_setup[0];
                   // let tp_millis = (1/clk_freq)*1000;
                   // let divider = (milliseconds as u32)/tp_millis;
@@ -197,16 +198,16 @@ use tm4c123x_hal::sysctl::Clocks;
                     Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
                         w.taen().set_bit()
                     );
-                    self.phys_timers.insert(0,PhysicalTimers::T0(v));
-                }
-                _=> {}
-            }
+                    //self.phys_timers.insert(0,PhysicalTimers::T0(v));
+               // }
+                //_=> {}
+            //}
              }
 
              T1 => {
-                let curr_timer = self.phys_timers.remove(0);
-                match curr_timer{
-                PhysicalTimers::T1(mut v) =>{
+               // let curr_timer = self.phys_timers.remove(0);
+               // match curr_timer{
+               // PhysicalTimers::T1(mut v) =>{
 
 
                     Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
@@ -220,10 +221,10 @@ use tm4c123x_hal::sysctl::Clocks;
                     Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
                         w.taen().set_bit()
                     );
-                    self.phys_timers.insert(1,PhysicalTimers::T1(v));
-                }
-                _=> {}
-            }
+                    //self.phys_timers.insert(1,PhysicalTimers::T1(v));
+                //}
+                //_=> {}
+            //}
       
              }
 

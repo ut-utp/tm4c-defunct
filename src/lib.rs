@@ -44,6 +44,7 @@
 
 // Mark the crate as no_std if the `no_std` feature is enabled.
 #![cfg_attr(feature = "no_std", no_std)]
+#![no_std]
 
 // Can't have `no_std` and `std_features` enabled!
 #[cfg(all(feature = "no_std", feature = "std_functionality"))]
