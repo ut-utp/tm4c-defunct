@@ -716,3 +716,5 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
         self.get_state(pin) == Interrupt
     }
 }
+
+//fn change_bite(Peripherals.GPIO_PORTE)
