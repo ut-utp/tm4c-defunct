@@ -54,25 +54,41 @@ impl PwmShim {
     pub fn get_pin_state(&self, pin: PwmPin) -> PwmState {
         self.states[pin].into()
     }
-
-    pub fn set_duty_cycle_helper(&mut self, pin: PwmPin, period: NonZeroU8) {
-        use PwmState::*;
-
-
-    }
-
-    fn start_timer(&mut self, pin: PwmPin, state: PwmState) {
-        use PwmState::*;
-
-    }
-
-    fn stop_timer(&mut self, pin: PwmPin) {
-
-    }
 }
 impl Pwm for PwmShim {
     fn set_state(&mut self, pin: PwmPin, state: PwmState) -> Result<(), PwmSetPeriodError> {
         use PwmState::*;
+        match pin{
+        P0 =>{
+        match state{
+            Enabled(_) => {
+                let p = Peripherals::take().unwrap().PWM0; 
+                p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() | 1)});
+
+            }
+            Disabled =>{
+                 let p = Peripherals::take().unwrap().PWM0; 
+                p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() & !1)});               
+            }
+        }
+    }
+
+    P1=> {
+        match state{
+            Enabled(_) => {
+                let p = Peripherals::take().unwrap().PWM1; 
+                p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() | 1)});
+
+            }
+            Disabled =>{
+                 let p = Peripherals::take().unwrap().PWM1; 
+                p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() & !1)});               
+            }
+        }
+
+    }
+    }
+        self.states[pin]=state;
 
         Ok(())
     }
@@ -86,9 +102,32 @@ impl Pwm for PwmShim {
     }
 
     fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) -> Result<(), PwmSetDutyError> {
+        match pin{
+
+        P0 =>{
+        let p = Peripherals::take().unwrap().PWM0; 
+        p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() & !1)});
+        
+        let period = p._0_load.read().bits();
+        
+        let new_duty = ((duty as u32)*period/256);
+        p._0_cmpa.write(|w| unsafe{w.bits(new_duty)});
+        p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() | 1)});
+    }
+
+    P1=>{
+        let p = Peripherals::take().unwrap().PWM1; 
+        p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() & !1)});
+        
+        let period = p._1_load.read().bits();
+        
+        let new_duty = ((duty as u32)*period/256);
+        p._1_cmpa.write(|w| unsafe{w.bits(new_duty)});
+        p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() | 1)});
+
+    }
+    }
         self.duty_cycle[pin] = duty;
-
-
         Ok(())
     }
 
