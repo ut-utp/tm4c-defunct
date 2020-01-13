@@ -6,6 +6,7 @@ use lc3_traits::peripherals::gpio::{
     Gpio, GpioMiscError, GpioPin, GpioPinArr, GpioReadError, GpioState, GpioWriteError,
 };
 extern crate embedded_hal;
+extern crate tm4c123x;
 use tm4c123x_hal::gpio::{gpioa::*, gpioe::*};
 use tm4c123x_hal::gpio::*;
 use tm4c123x_hal::gpio::{};
@@ -13,11 +14,18 @@ use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x_hal::{prelude::_embedded_hal_digital_InputPin, prelude::_embedded_hal_digital_OutputPin};
 use tm4c123x_hal::timer;
 #[derive(Copy, Clone, Debug, PartialEq)]
+
+//static mut peripheral: tm4c123x_hal::Peripherals = Peripherals::take().unwrap();
 pub enum State {
     Input(bool),
     Output(bool),
     Interrupt(bool),
     Disabled,
+}
+
+pub struct required_components{
+    porta: tm4c123x::GPIO_PORTA,
+    porte: tm4c123x::GPIO_PORTE,
 }
 
 impl From<State> for GpioState {
@@ -71,40 +79,16 @@ pub enum PhysicalPins {
 pub struct physical_pins<'a>{
     states: GpioPinArr<State>,
     flags:  GpioPinArr<Option<&'a AtomicBool>>,
-    mapping: Vec<physical_pin_mappings>,
-    mapping2: Vec<PhysicalPins>,
+    //mapping: [physical_pin_mappings; 8],
+    mapping2: [PhysicalPins; 8],
+    Peripheral_set: Option<&'a mut tm4c123x_hal::Peripherals>,
 
 }
-impl Default for physical_pins<'_>{
+ impl Default for physical_pins<'_>{
 
-    fn default()->Self{
+     fn default()->Self{
      let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
-     Self{
-       states: GpioPinArr(states_init),
-       flags: GpioPinArr([None; GpioPin::NUM_PINS]),
-       mapping: vec![
-
-       ],
-              mapping2: vec![
-
-       ],
-    }
-
-
-}
-}
-
-
-fn sys_init() -> tm4c123x_hal::sysctl::Sysctl{
-    let p_st = Peripherals::take().unwrap();
-    let mut sc = p_st.SYSCTL.constrain();
-    sc
-}
-
-fn init_pins() -> physical_pins<'static>{
-    let mut phys_default = physical_pins::default();
-    //println!("?{}", phys_default);
-    let p_st = Peripherals::take().unwrap();
+    let  p_st = Peripherals::take().unwrap();
     let mut sc = sys_init();
     let mut porta = p_st.GPIO_PORTA.split(&sc.power_control);
     let mut gpioa0 = porta.pa0.into_push_pull_output();
@@ -123,46 +107,151 @@ fn init_pins() -> physical_pins<'static>{
   //  gpioe1.set_low();
     let mut gpioe2 = porte.pe2.into_pull_up_input();
   //  gpioe2.set_low();
-    let mut gpioe3 = porte.pe3.into_pull_up_input();   
-   // gpioe3.set_low();
+    let mut gpioe3 = porte.pe3.into_pull_up_input(); 
 
-    let pin_mapping = vec![
-
-     // physical_pin_mappings::GPIO0(gpioa0),
-     // physical_pin_mappings::GPIO1(gpioa1),
-     // physical_pin_mappings::GPIO2(gpioa2),
-     // physical_pin_mappings::GPIO3(gpioa3),
-     // physical_pin_mappings::GPIO4(gpioe0),
-     // physical_pin_mappings::GPIO5(gpioe1),
-     // physical_pin_mappings::GPIO6(gpioe2),
-     // physical_pin_mappings::GPIO7(gpioe3),     
-    ];
-    let state_mapping = vec![
-
-    // State2::Output(gpioa0),
+     Self{
+       states: GpioPinArr(states_init),
+       flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+       //mapping: [],
+       mapping2: ([       
         PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
-       PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
-       PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
-       PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
-       PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
-       PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
-       PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
-       PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(gpioe3)),
-     // State2::Output(gpioa2),
-     // State2::Output(gpioa3),
-     // State2::Output(gpioe0),
-     // State2::Output(gpioe1),
-     // State2::Output(gpioe2),
-     // State2::Output(gpioe3),     
-    ];
-       physical_pins{
-       states: phys_default.states,
-       flags: phys_default.flags,
-       mapping: pin_mapping,
-       mapping2: state_mapping,
-       }
+        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
+        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
+        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
+        PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
+        PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
+        PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
+        PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(gpioe3)),
+     ]),
+    Peripheral_set: None,
+    }
+
+
+  }
+ }
+
+impl physical_pins<'_> {
+
+    pub fn new<'a>(system_config: &'static tm4c123x_hal::sysctl::Sysctl, frozen_clock: &'static tm4c123x_hal::sysctl::Clocks, peripheral_set: required_components) -> Self {
+     let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
+         let p_st = peripheral_set;
+    let mut sc = sys_init();
+  // let x = p_st.GPIO_PORTA;
+   let porta = (p_st.porta.split(&sc.power_control));
+   let mut gpioa0 = porta.pa0.into_push_pull_output();
+     (gpioa0).set_low();
+      let mut gpioa1 = porta.pa1.into_push_pull_output();
+      gpioa1.set_low();
+      let mut gpioa2 = (porta).pa2.into_push_pull_output();
+      (gpioa2).set_low();
+      let mut gpioa3 = (porta).pa3.into_push_pull_output();
+      (gpioa3).set_low();
+     // let a2 = porta;
+ 
+      let porte = (p_st.porte.split(&sc.power_control));
+      let gpioe0 = (porte).pe0.into_pull_up_input();
+ // // //   gpioe0.set_low();            //input - no init state                        
+      let gpioe1 = (porte).pe1.into_pull_up_input();
+ // //  //  gpioe1.set_low();
+      let gpioe2 = (porte).pe2.into_pull_up_input();
+ // //  //  gpioe2.set_low();
+      let gpioe3 = (porte).pe3.into_pull_up_input();  
+      //let mut gpioe4 = porte.pe4; 
+      //let r1 = gpioe4.into_pull_up_input();
+      //let r2 = r1.into_push_pull_output();
+     Self{
+       states: GpioPinArr(states_init),
+       flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+       //mapping: [],
+        mapping2: ([       
+        PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
+        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
+        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
+        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
+        PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
+        PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
+        PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
+        PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(gpioe3)),
+     ]),
+    Peripheral_set: None,
+    }
+
+    }
+}
+
+
+fn sys_init() -> tm4c123x_hal::sysctl::Sysctl{
+    let p_st = Peripherals::take().unwrap();
+    let mut sc = p_st.SYSCTL.constrain();
+    sc
+}
+
+pub trait IntoInput: {
 
 }
+
+// fn init_pins() -> physical_pins<'static>{
+//     let mut phys_default = physical_pins::default();
+//     //println!("?{}", phys_default);
+//     let p_st = Peripherals::take().unwrap();
+//     let mut sc = sys_init();
+//     let mut porta = p_st.GPIO_PORTA.split(&sc.power_control);
+//     let mut gpioa0 = porta.pa0.into_push_pull_output();
+//     gpioa0.set_low();
+//     let mut gpioa1 = porta.pa1.into_push_pull_output();
+//     gpioa1.set_low();
+//     let mut gpioa2 = porta.pa2.into_push_pull_output();
+//     gpioa2.set_low();
+//     let mut gpioa3 = porta.pa3.into_push_pull_output();
+//     gpioa3.set_low();
+ 
+//     let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
+//     let mut gpioe0 = porte.pe0.into_pull_up_input();
+//  //   gpioe0.set_low();            //input - no init state                        
+//     let mut gpioe1 = porte.pe1.into_pull_up_input();
+//   //  gpioe1.set_low();
+//     let mut gpioe2 = porte.pe2.into_pull_up_input();
+//   //  gpioe2.set_low();
+//     let mut gpioe3 = porte.pe3.into_pull_up_input();   
+//    // gpioe3.set_low();
+
+//     let pin_mapping = vec![
+
+//      // physical_pin_mappings::GPIO0(gpioa0),
+//      // physical_pin_mappings::GPIO1(gpioa1),
+//      // physical_pin_mappings::GPIO2(gpioa2),
+//      // physical_pin_mappings::GPIO3(gpioa3),
+//      // physical_pin_mappings::GPIO4(gpioe0),
+//      // physical_pin_mappings::GPIO5(gpioe1),
+//      // physical_pin_mappings::GPIO6(gpioe2),
+//      // physical_pin_mappings::GPIO7(gpioe3),     
+//     ];
+//     let state_mapping = vec![
+
+//     // State2::Output(gpioa0),
+//         PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
+//        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
+//        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
+//        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
+//        PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
+//        PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
+//        PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
+//        PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(gpioe3)),
+//      // State2::Output(gpioa2),
+//      // State2::Output(gpioa3),
+//      // State2::Output(gpioe0),
+//      // State2::Output(gpioe1),
+//      // State2::Output(gpioe2),
+//      // State2::Output(gpioe3),     
+//     ];
+//        physical_pins{
+//        states: phys_default.states,
+//        flags: phys_default.flags,
+//        mapping: pin_mapping,
+//        mapping2: state_mapping,
+//        }
+
+// }
 
 
 pub struct GpioShim<'a> {
@@ -189,9 +278,9 @@ impl IndexMut<GpioPin> for physical_pins<'_> {
 // Also VERY IMPORTANT: Make the self[pin] update and the actual physical pin update atomic. To wrap in lock.
 
 impl physical_pins<'_> {
-    pub fn new() -> Self {
-        Self::default()
-    }
+    // pub fn new() -> Self {
+    //     Self::default()
+    // }
 
     // pub fn new_shared() -> Arc<RwLock<Self>> {
     //     Arc::<RwLock<Self>>::default()
@@ -207,197 +296,197 @@ impl physical_pins<'_> {
 
         match self[pin] {
             Input(_) => {
-                self[pin]=Input(bit);
-                let mut x = usize::from(pin);
-                match x{
-                    0 => {let y = self.mapping2.remove(0);
-                          //let xy;
-                            match y{
-                                 g0(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(0, PhysicalPins::g0(State2::Output(out)));
+                // self[pin]=Input(bit);
+                // let mut x = usize::from(pin);
+                // match x{
+                //     0 => {let y = self.mapping2.remove(0);
+                //           //let xy;
+                //             match y{
+                //                  g0(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(0, PhysicalPins::g0(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    1 => {let y = self.mapping2.remove(1);
-                          //let xy;
-                            match y{
-                                 g1(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(1, PhysicalPins::g1(State2::Output(out)));
+                //     },
+                //     1 => {let y = self.mapping2.remove(1);
+                //           //let xy;
+                //             match y{
+                //                  g1(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(1, PhysicalPins::g1(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    2 => {let y = self.mapping2.remove(2);
-                          //let xy;
-                            match y{
-                                 g2(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(2, PhysicalPins::g2(State2::Output(out)));
+                //     },
+                //     2 => {let y = self.mapping2.remove(2);
+                //           //let xy;
+                //             match y{
+                //                  g2(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(2, PhysicalPins::g2(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    3 => {let y = self.mapping2.remove(3);
-                          //let xy;
-                            match y{
-                                 g3(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(3, PhysicalPins::g3(State2::Output(out)));
+                //     },
+                //     3 => {let y = self.mapping2.remove(3);
+                //           //let xy;
+                //             match y{
+                //                  g3(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(3, PhysicalPins::g3(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    4 => {let y = self.mapping2.remove(4);
-                          //let xy;
-                            match y{
-                                 g4(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(4, PhysicalPins::g4(State2::Output(out)));
+                //     },
+                //     4 => {let y = self.mapping2.remove(4);
+                //           //let xy;
+                //             match y{
+                //                  g4(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(4, PhysicalPins::g4(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    5 => {let y = self.mapping2.remove(5);
-                          //let xy;
-                            match y{
-                                 g5(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(5, PhysicalPins::g5(State2::Output(out)));
+                //     },
+                //     5 => {let y = self.mapping2.remove(5);
+                //           //let xy;
+                //             match y{
+                //                  g5(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(5, PhysicalPins::g5(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    6 => {let y = self.mapping2.remove(6);
-                          //let xy;
-                            match y{
-                                 g6(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(6, PhysicalPins::g6(State2::Output(out)));
+                //     },
+                //     6 => {let y = self.mapping2.remove(6);
+                //           //let xy;
+                //             match y{
+                //                  g6(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(6, PhysicalPins::g6(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    7 => {let y = self.mapping2.remove(7);
-                          //let xy;
-                            match y{
-                                 g7(mut vb) => {
-                                    match vb{
-                                        State2::Input(mut ins) => {},
-                                        State2::Output(mut out) => {
-                                            {
-                                             if bit { out.set_high(); } else { out.set_low(); };
-                                        };
-                                        self.mapping2.insert(7, PhysicalPins::g7(State2::Output(out)));
+                //     },
+                //     7 => {let y = self.mapping2.remove(7);
+                //           //let xy;
+                //             match y{
+                //                  g7(mut vb) => {
+                //                     match vb{
+                //                         State2::Input(mut ins) => {},
+                //                         State2::Output(mut out) => {
+                //                             {
+                //                              if bit { out.set_high(); } else { out.set_low(); };
+                //                         };
+                //                         self.mapping2.insert(7, PhysicalPins::g7(State2::Output(out)));
 
-                                       },
-                                        _ => {},
+                //                        },
+                //                         _ => {},
 
-                                    }
+                //                     }
                                     
-                                 }
-                                _ => {},
-                            }
+                //                  }
+                //                 _ => {},
+                //             }
 
 
-                    },
-                    _ => {},
-                    // physical_pin_mappings::GPIO0(y) => {let mut res  = PA0<Output<>>{_mode: PhantomData};},
+                //     },
+                //     _ => {},
+                //     // physical_pin_mappings::GPIO0(y) => {let mut res  = PA0<Output<>>{_mode: PhantomData};},
 
-                };
+                // };
 
 
             },
@@ -449,46 +538,168 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 //self[pin]=State::Output(false);
                 match pin{
                 G0 => {
-                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_pull_up_input();
-                self.mapping2.remove(0);
-                self.mapping2.insert(0, PhysicalPins::g0(State2::Input(handle)));
+
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g0(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[0],PhysicalPins::g0(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
+                    
                 },
                 G1 => {
-                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_pull_up_input();
-                self.mapping2.remove(1);
-                self.mapping2.insert(1, PhysicalPins::g1(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g1(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[1],PhysicalPins::g1(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
                },
                 G2 =>{
-                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_pull_up_input();
-                self.mapping2.remove(2);
-                self.mapping2.insert(2, PhysicalPins::g2(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[2],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g2(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[2],PhysicalPins::g2(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
                },
                 G3 =>{
-                let handle = Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_pull_up_input();
-                self.mapping2.remove(3);
-                self.mapping2.insert(3, PhysicalPins::g3(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[3],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g3(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[3],PhysicalPins::g3(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G4 =>{
-                let handle = Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_pull_up_input();
-                self.mapping2.remove(4);
-                self.mapping2.insert(4, PhysicalPins::g4(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[4],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g4(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[4],PhysicalPins::g4(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G5 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_pull_up_input();
-                self.mapping2.remove(5);
-                self.mapping2.insert(5, PhysicalPins::g5(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[5],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g5(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[5],PhysicalPins::g5(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
 
             },
                 G6 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_pull_up_input();
-                self.mapping2.remove(6);
-                self.mapping2.insert(6, PhysicalPins::g6(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[6],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g6(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[6],PhysicalPins::g6(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
 
             },
                 G7 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_pull_up_input();
-                self.mapping2.remove(7);
-                self.mapping2.insert(7, PhysicalPins::g7(State2::Input(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[7],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g7(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {},
+                            State2::Output(mut out) => {
+                                let new_out = out.into_pull_up_input();
+                                core::mem::replace(&mut self.mapping2[7],PhysicalPins::g7(State2::Input(new_out))) ;
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 }
 
@@ -497,44 +708,172 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 self[pin]=State::Output(false);
                 match pin{
                 G0 => {
-                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa0.into_push_pull_output();
-                self.mapping2.remove(0);
-                self.mapping2.insert(0, PhysicalPins::g0(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g0(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[0],PhysicalPins::g0(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G1 => {
-                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa1.into_push_pull_output();
-                self.mapping2.remove(1);
-                self.mapping2.insert(1, PhysicalPins::g1(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g1(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[1],PhysicalPins::g1(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G2 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa2.into_push_pull_output();
-                self.mapping2.remove(2);
-                self.mapping2.insert(2, PhysicalPins::g2(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[2],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g2(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[2],PhysicalPins::g2(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G3 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTA.split(&sys_init().power_control).pa3.into_push_pull_output();
-                self.mapping2.remove(3);
-                self.mapping2.insert(3, PhysicalPins::g3(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[3],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g3(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[3],PhysicalPins::g3(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G4 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe0.into_push_pull_output();
-                self.mapping2.remove(4);
-                self.mapping2.insert(4, PhysicalPins::g4(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[4],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g4(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[4],PhysicalPins::g4(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G5 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe1.into_push_pull_output();
-                self.mapping2.remove(5);
-                self.mapping2.insert(5, PhysicalPins::g5(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[5],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g5(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[5],PhysicalPins::g5(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G6 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe2.into_push_pull_output();
-                self.mapping2.remove(6);
-                self.mapping2.insert(6, PhysicalPins::g6(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[6],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g6(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[6],PhysicalPins::g6(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 G7 =>{
-                let handle=Peripherals::take().unwrap().GPIO_PORTE.split(&sys_init().power_control).pe3.into_push_pull_output();
-                self.mapping2.remove(7);
-                self.mapping2.insert(7, PhysicalPins::g7(State2::Output(handle)));
+                let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[7],core::mem::uninitialized() )}};
+
+                  match handle{
+                      PhysicalPins::g7(mut val) =>  { 
+                        match val{
+                            State2::Input(mut ins) => {
+                                let new_out = ins.into_push_pull_output();
+                                core::mem::replace(&mut self.mapping2[7],PhysicalPins::g7(State2::Output(new_out))) ;
+                            },
+                            State2::Output(mut out) => {
+                            },
+                    _=>{},
+
+                     
+                  }
+
+                 }
+                 _ =>{}
+                }
             },
                 }
             },
