@@ -296,197 +296,229 @@ impl physical_pins<'_> {
 
         match self[pin] {
             Input(_) => {
-                // self[pin]=Input(bit);
-                // let mut x = usize::from(pin);
-                // match x{
-                //     0 => {let y = self.mapping2.remove(0);
-                //           //let xy;
-                //             match y{
-                //                  g0(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(0, PhysicalPins::g0(State2::Output(out)));
+                 self[pin]=Input(bit);
+                 let mut x = usize::from(pin);
+                 match x{
 
-                //                        },
-                //                         _ => {},
 
-                //                     }
+                //let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
+
+                //   match handle{
+                //       PhysicalPins::g0(mut val) =>  { 
+                //         match val{
+                //             State2::Input(mut ins) => {
+                //                 let new_out = ins.into_push_pull_output();
+                //                 core::mem::replace(&mut self.mapping2[0],PhysicalPins::g0(State2::Output(new_out))) ;
+                //             },
+                //             State2::Output(mut out) => {
+                //             },
+                //     _=>{},
+
+                     
+                //   }
+
+                //  }
+                //  _ =>{}
+                // }
+
+
+                    0 => {
+                          let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
+                            match handle{
+                                 g0(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[0],PhysicalPins::g0(State2::Output(out))) ;
                                     
-                //                  }
-                //                 _ => {},
-                //             }
 
+                                       },
+                                        _ => {},
 
-                //     },
-                //     1 => {let y = self.mapping2.remove(1);
-                //           //let xy;
-                //             match y{
-                //                  g1(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(1, PhysicalPins::g1(State2::Output(out)));
-
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                                    }
                                     
-                //                  }
-                //                 _ => {},
-                //             }
+                                 }
+                                _ => {},
+                            }
 
 
-                //     },
-                //     2 => {let y = self.mapping2.remove(2);
-                //           //let xy;
-                //             match y{
-                //                  g2(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(2, PhysicalPins::g2(State2::Output(out)));
-
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                    },
+                    _=>{},
+                    1 => {                          
+                        let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
+                            match handle{
+                                 g1(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[1],PhysicalPins::g1(State2::Output(out))) ;
                                     
-                //                  }
-                //                 _ => {},
-                //             }
 
+                                       },
+                                        _ => {},
 
-                //     },
-                //     3 => {let y = self.mapping2.remove(3);
-                //           //let xy;
-                //             match y{
-                //                  g3(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(3, PhysicalPins::g3(State2::Output(out)));
-
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                                    }
                                     
-                //                  }
-                //                 _ => {},
-                //             }
+                                 }
+                                _ => {},
+                            }
 
 
-                //     },
-                //     4 => {let y = self.mapping2.remove(4);
-                //           //let xy;
-                //             match y{
-                //                  g4(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(4, PhysicalPins::g4(State2::Output(out)));
 
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                    },
+                    2 => {                          
+                        let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[2],core::mem::uninitialized() )}};
+                            match handle{
+                                 g2(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[2],PhysicalPins::g2(State2::Output(out))) ;
                                     
-                //                  }
-                //                 _ => {},
-                //             }
 
+                                       },
+                                        _ => {},
 
-                //     },
-                //     5 => {let y = self.mapping2.remove(5);
-                //           //let xy;
-                //             match y{
-                //                  g5(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(5, PhysicalPins::g5(State2::Output(out)));
-
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                                    }
                                     
-                //                  }
-                //                 _ => {},
-                //             }
+                                 }
+                                _ => {},
+                            }
 
 
-                //     },
-                //     6 => {let y = self.mapping2.remove(6);
-                //           //let xy;
-                //             match y{
-                //                  g6(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(6, PhysicalPins::g6(State2::Output(out)));
+                    },
+                    3 => {
 
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                        let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[3],core::mem::uninitialized() )}};
+                            match handle{
+                                 g3(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[3],PhysicalPins::g3(State2::Output(out))) ;
                                     
-                //                  }
-                //                 _ => {},
-                //             }
 
+                                       },
+                                        _ => {},
 
-                //     },
-                //     7 => {let y = self.mapping2.remove(7);
-                //           //let xy;
-                //             match y{
-                //                  g7(mut vb) => {
-                //                     match vb{
-                //                         State2::Input(mut ins) => {},
-                //                         State2::Output(mut out) => {
-                //                             {
-                //                              if bit { out.set_high(); } else { out.set_low(); };
-                //                         };
-                //                         self.mapping2.insert(7, PhysicalPins::g7(State2::Output(out)));
-
-                //                        },
-                //                         _ => {},
-
-                //                     }
+                                    }
                                     
-                //                  }
-                //                 _ => {},
-                //             }
+                                 }
+                                _ => {},
+                            }
+
+                    },
+                    4 => {
+                        let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[4],core::mem::uninitialized() )}};
+                            match handle{
+                                 g4(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[4],PhysicalPins::g4(State2::Output(out))) ;
+                                    
+
+                                       },
+                                        _ => {},
+
+                                    }
+                                    
+                                 }
+                                _ => {},
+                            }
 
 
-                //     },
+                    },
+                    5 => {
+                        let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[5],core::mem::uninitialized() )}};
+                            match handle{
+                                 g5(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[5],PhysicalPins::g5(State2::Output(out))) ;
+                                    
+
+                                       },
+                                        _ => {},
+
+                                    }
+                                    
+                                 }
+                                _ => {},
+                            }
+
+
+                    },
+                    6 => {
+                       let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[6],core::mem::uninitialized() )}};
+                            match handle{
+                                 g6(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[6],PhysicalPins::g6(State2::Output(out))) ;
+                                    
+
+                                       },
+                                        _ => {},
+
+                                    }
+                                    
+                                 }
+                                _ => {},
+                            }
+
+                    },
+                    7 => {
+                         let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[7],core::mem::uninitialized() )}};
+                            match handle{
+                                 g7(mut vb) => {
+                                    match vb{
+                                        State2::Input(mut ins) => {},
+                                        State2::Output(mut out) => {
+                                            {
+                                             if bit { out.set_high(); } else { out.set_low(); };
+                                        };
+                                        core::mem::replace(&mut self.mapping2[7],PhysicalPins::g7(State2::Output(out))) ;
+                                    
+
+                                       },
+                                        _ => {},
+
+                                    }
+                                    
+                                 }
+                                _ => {},
+                            }
+
+
+                    },
                 //     _ => {},
                 //     // physical_pin_mappings::GPIO0(y) => {let mut res  = PA0<Output<>>{_mode: PhantomData};},
 
-                // };
+                 };
 
 
             },
