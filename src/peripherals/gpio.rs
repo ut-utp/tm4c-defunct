@@ -24,8 +24,8 @@ pub enum State {
 }
 
 pub struct required_components{
-    porta: tm4c123x::GPIO_PORTA,
-    porte: tm4c123x::GPIO_PORTE,
+    pub porta: tm4c123x::GPIO_PORTA,
+    pub porte: tm4c123x::GPIO_PORTE,
 }
 
 impl From<State> for GpioState {
@@ -132,12 +132,12 @@ pub struct physical_pins<'a>{
 
 impl physical_pins<'_> {
 
-    pub fn new<'a>(system_config: &'static tm4c123x_hal::sysctl::Sysctl, frozen_clock: &'static tm4c123x_hal::sysctl::Clocks, peripheral_set: required_components) -> Self {
+    pub fn new<'a>(power: &tm4c123x_hal::sysctl::PowerControl, frozen_clock: &tm4c123x_hal::sysctl::Clocks, peripheral_set: required_components) -> Self {
      let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
          let p_st = peripheral_set;
     let mut sc = sys_init();
   // let x = p_st.GPIO_PORTA;
-   let porta = (p_st.porta.split(&sc.power_control));
+   let porta = (p_st.porta.split(power));
    let mut gpioa0 = porta.pa0.into_push_pull_output();
      (gpioa0).set_low();
       let mut gpioa1 = porta.pa1.into_push_pull_output();
@@ -148,7 +148,7 @@ impl physical_pins<'_> {
       (gpioa3).set_low();
      // let a2 = porta;
  
-      let porte = (p_st.porte.split(&sc.power_control));
+      let porte = (p_st.porte.split(power));
       let gpioe0 = (porte).pe0.into_pull_up_input();
  // // //   gpioe0.set_low();            //input - no init state                        
       let gpioe1 = (porte).pe1.into_pull_up_input();
