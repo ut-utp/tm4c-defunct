@@ -190,69 +190,6 @@ pub trait IntoInput: {
 
 }
 
-// fn init_pins() -> physical_pins<'static>{
-//     let mut phys_default = physical_pins::default();
-//     //println!("?{}", phys_default);
-//     let p_st = Peripherals::take().unwrap();
-//     let mut sc = sys_init();
-//     let mut porta = p_st.GPIO_PORTA.split(&sc.power_control);
-//     let mut gpioa0 = porta.pa0.into_push_pull_output();
-//     gpioa0.set_low();
-//     let mut gpioa1 = porta.pa1.into_push_pull_output();
-//     gpioa1.set_low();
-//     let mut gpioa2 = porta.pa2.into_push_pull_output();
-//     gpioa2.set_low();
-//     let mut gpioa3 = porta.pa3.into_push_pull_output();
-//     gpioa3.set_low();
- 
-//     let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
-//     let mut gpioe0 = porte.pe0.into_pull_up_input();
-//  //   gpioe0.set_low();            //input - no init state                        
-//     let mut gpioe1 = porte.pe1.into_pull_up_input();
-//   //  gpioe1.set_low();
-//     let mut gpioe2 = porte.pe2.into_pull_up_input();
-//   //  gpioe2.set_low();
-//     let mut gpioe3 = porte.pe3.into_pull_up_input();   
-//    // gpioe3.set_low();
-
-//     let pin_mapping = vec![
-
-//      // physical_pin_mappings::GPIO0(gpioa0),
-//      // physical_pin_mappings::GPIO1(gpioa1),
-//      // physical_pin_mappings::GPIO2(gpioa2),
-//      // physical_pin_mappings::GPIO3(gpioa3),
-//      // physical_pin_mappings::GPIO4(gpioe0),
-//      // physical_pin_mappings::GPIO5(gpioe1),
-//      // physical_pin_mappings::GPIO6(gpioe2),
-//      // physical_pin_mappings::GPIO7(gpioe3),     
-//     ];
-//     let state_mapping = vec![
-
-//     // State2::Output(gpioa0),
-//         PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
-//        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
-//        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
-//        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
-//        PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
-//        PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
-//        PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
-//        PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(gpioe3)),
-//      // State2::Output(gpioa2),
-//      // State2::Output(gpioa3),
-//      // State2::Output(gpioe0),
-//      // State2::Output(gpioe1),
-//      // State2::Output(gpioe2),
-//      // State2::Output(gpioe3),     
-//     ];
-//        physical_pins{
-//        states: phys_default.states,
-//        flags: phys_default.flags,
-//        mapping: pin_mapping,
-//        mapping2: state_mapping,
-//        }
-
-// }
-
 
 pub struct GpioShim<'a> {
     states: GpioPinArr<State>,

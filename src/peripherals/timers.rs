@@ -22,6 +22,11 @@ use tm4c123x_hal::sysctl::Clocks;
     T1(Timer<TIMER1>)
  }
 
+ pub struct required_components{
+    timer0: tm4c123x::TIMER0,
+    timer1: tm4c123x::TIMER1,
+ }
+
  // pub system_clock: tm4c123x_hal::sysctl::Sysctl = {
    
  //    tm4c123x_hal::Peripherals::take().unwrap().SYSCTL.constrain()
@@ -94,9 +99,10 @@ use tm4c123x_hal::sysctl::Clocks;
 
  impl TimersShim<'_> {
 
-     pub fn new(system_config: &'static tm4c123x_hal::sysctl::Sysctl, frozen_clock: &'static tm4c123x_hal::sysctl::Clocks) -> Self {
+     pub fn new(system_config: &'static tm4c123x_hal::sysctl::Sysctl, frozen_clock: &'static tm4c123x_hal::sysctl::Clocks, peripheral_set: required_components) -> Self {
 
-             let t1 = Peripherals::take().unwrap().TIMER0;
+             let t1 = peripheral_set.timer0;
+             let t2 = peripheral_set.timer1;
     //     let mut sc = Peripherals::take().unwrap().SYSCTL.constrain();
     // sc.clock_setup.oscillator = tm4c123x_hal::sysctl::Oscillator::Main(
     //     tm4c123x_hal::sysctl::CrystalFrequency::_16mhz,
@@ -112,7 +118,7 @@ use tm4c123x_hal::sysctl::Clocks;
         frozen_clock,
     );
     let time_init2 = tm4c123x_hal::timer::Timer::timer1::<MegaHertz>(
-        Peripherals::take().unwrap().TIMER1,
+        t2,
         MegaHertz(80),
         &((*system_config).power_control),
         frozen_clock,
@@ -139,14 +145,16 @@ use tm4c123x_hal::sysctl::Clocks;
             Disabled => {
                 match timer{
                     T0 =>{
-                         Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
+                    let t0 = unsafe { &*tm4c123x::TIMER0::ptr() };  
+                    t0.ctl.modify(|_, w|
                     w.taen().clear_bit()
                     .tben().clear_bit()
                     );                   
                     }
 
                     T1 => {
-                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                    let t1 = unsafe { &*tm4c123x::TIMER1::ptr() }; 
+                    t1.ctl.modify(|_, w|
                     w.taen().clear_bit()
                     .tben().clear_bit()
                     );
@@ -187,15 +195,16 @@ use tm4c123x_hal::sysctl::Clocks;
 
 
                   // Disable before making changes
-                    Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
+                  let t0 = unsafe { &*tm4c123x::TIMER0::ptr() };  
+                    t0.ctl.modify(|_, w|
                     w.taen().clear_bit()
                     .tben().clear_bit()
                     );
-                   Peripherals::take().unwrap().TIMER0.tav.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
-                   Peripherals::take().unwrap().TIMER0.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
+                   t0.tav.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
+                   t0.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
 
                     // // start counter
-                    Peripherals::take().unwrap().TIMER0.ctl.modify(|_, w|
+                    t0.ctl.modify(|_, w|
                         w.taen().set_bit()
                     );
                     //self.phys_timers.insert(0,PhysicalTimers::T0(v));
@@ -209,16 +218,16 @@ use tm4c123x_hal::sysctl::Clocks;
                // match curr_timer{
                // PhysicalTimers::T1(mut v) =>{
 
-
-                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                    let t1 = unsafe { &*tm4c123x::TIMER1::ptr() };  
+                    t1.ctl.modify(|_, w|
                     w.taen().clear_bit()
                     .tben().clear_bit()
                     );
-                   Peripherals::take().unwrap().TIMER1.tav.write(|w| unsafe {  w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
+                   t1.tav.write(|w| unsafe {  w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
                    Peripherals::take().unwrap().TIMER1.tailr.write(|w| unsafe { w.bits(millis_to_ticks(milliseconds as f32, self.clock_freq as f32)) });
 
                     // // start counter
-                    Peripherals::take().unwrap().TIMER1.ctl.modify(|_, w|
+                    t1.ctl.modify(|_, w|
                         w.taen().set_bit()
                     );
                     //self.phys_timers.insert(1,PhysicalTimers::T1(v));
