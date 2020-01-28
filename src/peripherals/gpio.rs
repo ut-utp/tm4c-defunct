@@ -7,7 +7,7 @@ use lc3_traits::peripherals::gpio::{
 };
 extern crate embedded_hal;
 extern crate tm4c123x;
-use tm4c123x_hal::gpio::{gpioa::*, gpioe::*};
+use tm4c123x_hal::gpio::{gpioa::*, gpioe::*, gpiof::*, gpiob::*};
 use tm4c123x_hal::gpio::*;
 use tm4c123x_hal::gpio::{};
 use tm4c123x_hal::{Peripherals, prelude::*};
@@ -24,7 +24,7 @@ pub enum State {
 }
 
 pub struct required_components{
-    pub porta: tm4c123x::GPIO_PORTA,
+    pub porta: tm4c123x::GPIO_PORTF,
     pub porte: tm4c123x::GPIO_PORTE,
 }
 
@@ -42,10 +42,10 @@ impl From<State> for GpioState {
 }
 
 enum physical_pin_mappings {
-    GPIO0(PA0<Output<PushPull>>),
-    GPIO1(PA1<Output<PushPull>>),
-    GPIO2(PA2<Output<PushPull>>),
-    GPIO3(PA3<Output<PushPull>>),
+    GPIO0(PF1<Output<PushPull>>),
+    GPIO1(PF2<Output<PushPull>>),
+    GPIO2(PF3<Output<PushPull>>),
+    GPIO3(PF4<Output<PushPull>>),
     GPIO4(PE0<Input<PullUp>>),
     GPIO5(PE1<Input<PullUp>>),
     GPIO6(PE2<Input<PullUp>>),
@@ -66,10 +66,10 @@ where
 }
 
 pub enum PhysicalPins {
-    g0  (State2<PA0<Input<PullUp>>, PA0<Output<PushPull>>>),
-    g1  (State2<PA1<Input<PullUp>>, PA1<Output<PushPull>>>),
-    g2  (State2<PA2<Input<PullUp>>, PA2<Output<PushPull>>>),
-    g3  (State2<PA3<Input<PullUp>>, PA3<Output<PushPull>>>),
+    g0  (State2<PF1<Input<PullUp>>, PF1<Output<PushPull>>>),
+    g1  (State2<PF2<Input<PullUp>>, PF2<Output<PushPull>>>),
+    g2  (State2<PF3<Input<PullUp>>, PF3<Output<PushPull>>>),
+    g3  (State2<PF4<Input<PullUp>>, PF4<Output<PushPull>>>),
     g4  (State2<PE0<Input<PullUp>>, PE0<Output<PushPull>>>),
     g5  (State2<PE1<Input<PullUp>>, PE1<Output<PushPull>>>),
     g6  (State2<PE2<Input<PullUp>>, PE2<Output<PushPull>>>),
@@ -88,16 +88,24 @@ pub struct physical_pins<'a>{
 
      fn default()->Self{
      let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
+   //   let p =  hal::Peripherals::take().unwrap();
+   //   let mut sc = p.SYSCTL.constrain();
+   //   let mut portb = p.GPIO_PORTF.split(&sc.power_control);
+   // //  //let timer_output_pin = portb.pb0.into_af_push_pull::<gpio::AF7>(&mut portb.control);
+   // // // let uart_tx_pin = portb.pb1.into_af_open_drain::<gpio::AF1, gpio::PullUp>(&mut portb.control);
+   //   let mut blue_led = portb.pf2.into_push_pull_output();
+   //   blue_led.set_high();
+
     let  p_st = Peripherals::take().unwrap();
-    let mut sc = sys_init();
-    let mut porta = p_st.GPIO_PORTA.split(&sc.power_control);
-    let mut gpioa0 = porta.pa0.into_push_pull_output();
+    let mut sc = p_st.SYSCTL.constrain();
+    let mut porta = p_st.GPIO_PORTF.split(&sc.power_control);
+    let mut gpioa0 = porta.pf1.into_push_pull_output();
     gpioa0.set_low();
-    let mut gpioa1 = porta.pa1.into_push_pull_output();
-    gpioa1.set_low();
-    let mut gpioa2 = porta.pa2.into_push_pull_output();
+    let mut gpioa1 = porta.pf2.into_push_pull_output();
+    gpioa1.set_high();
+    let mut gpioa2 = porta.pf3.into_push_pull_output();
     gpioa2.set_low();
-    let mut gpioa3 = porta.pa3.into_push_pull_output();
+    let mut gpioa3 = porta.pf4.into_push_pull_output();
     gpioa3.set_low();
  
     let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
@@ -114,10 +122,10 @@ pub struct physical_pins<'a>{
        flags: GpioPinArr([None; GpioPin::NUM_PINS]),
        //mapping: [],
        mapping2: ([       
-        PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
-        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
-        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
-        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
+        PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(gpioa0)),
+        PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(gpioa1)),
+        PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(gpioa2)),
+        PhysicalPins::g3(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(gpioa3)),
         PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
         PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
         PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
@@ -132,19 +140,19 @@ pub struct physical_pins<'a>{
 
 impl physical_pins<'_> {
 
-    pub fn new<'a>(power: &tm4c123x_hal::sysctl::PowerControl, frozen_clock: &tm4c123x_hal::sysctl::Clocks, peripheral_set: required_components) -> Self {
+    pub fn new<'a>(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components) -> Self {
      let mut states_init = [State::Output(false), State::Output(false),       State::Output(false), State::Output(false), State::Input(false), State::Input(false), State::Input(false), State::Input(false)];
          let p_st = peripheral_set;
-    let mut sc = sys_init();
+    //let mut sc = sys_init();
   // let x = p_st.GPIO_PORTA;
    let porta = (p_st.porta.split(power));
-   let mut gpioa0 = porta.pa0.into_push_pull_output();
+   let mut gpioa0 = porta.pf1.into_push_pull_output();
      (gpioa0).set_low();
-      let mut gpioa1 = porta.pa1.into_push_pull_output();
+      let mut gpioa1 = porta.pf2.into_push_pull_output();
       gpioa1.set_low();
-      let mut gpioa2 = (porta).pa2.into_push_pull_output();
+      let mut gpioa2 = (porta).pf3.into_push_pull_output();
       (gpioa2).set_low();
-      let mut gpioa3 = (porta).pa3.into_push_pull_output();
+      let mut gpioa3 = (porta).pf4.into_push_pull_output();
       (gpioa3).set_low();
      // let a2 = porta;
  
@@ -164,10 +172,10 @@ impl physical_pins<'_> {
        flags: GpioPinArr([None; GpioPin::NUM_PINS]),
        //mapping: [],
         mapping2: ([       
-        PhysicalPins::g0(State2::<PA0<Input<PullUp>>, PA0<Output<PushPull>>>::Output(gpioa0)),
-        PhysicalPins::g1(State2::<PA1<Input<PullUp>>, PA1<Output<PushPull>>>::Output(gpioa1)),
-        PhysicalPins::g2(State2::<PA2<Input<PullUp>>, PA2<Output<PushPull>>>::Output(gpioa2)),
-        PhysicalPins::g3(State2::<PA3<Input<PullUp>>, PA3<Output<PushPull>>>::Output(gpioa3)),
+        PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(gpioa0)),
+        PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(gpioa1)),
+        PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(gpioa2)),
+        PhysicalPins::g3(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(gpioa3)),
         PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(gpioe0)),
         PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(gpioe1)),
         PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(gpioe2)),
@@ -232,8 +240,8 @@ impl physical_pins<'_> {
         use PhysicalPins::*;
 
         match self[pin] {
-            Input(_) => {
-                 self[pin]=Input(bit);
+            _ => {
+                 self[pin]=Output(bit);
                  let mut x = usize::from(pin);
                  match x{
 
@@ -283,7 +291,7 @@ impl physical_pins<'_> {
 
 
                     },
-                    _=>{},
+                   // _=>{},
                     1 => {                          
                         let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
                             match handle{
@@ -452,22 +460,22 @@ impl physical_pins<'_> {
 
 
                     },
-                //     _ => {},
-                //     // physical_pin_mappings::GPIO0(y) => {let mut res  = PA0<Output<>>{_mode: PhantomData};},
+                     _ => {},
+                //     // physical_pin_mappings::GPIO0(y) => {let mut res  = PF1<Output<>>{_mode: PhantomData};},
 
                  };
 
 
             },
-            Interrupt(prev) => {
-                // Rising edge!
-                if bit && !prev {
-                    self.raise_interrupt(pin)
-                }
+            // Interrupt(prev) => {
+            //     // Rising edge!
+            //     if bit && !prev {
+            //         self.raise_interrupt(pin)
+            //     }
 
-               // Interrupt(bit)
-            }
-            Output(_) | Disabled => return None,
+            //    // Interrupt(bit)
+            // }
+            // Input(_) | Disabled => return None,
          };
 
         Some(())
@@ -505,8 +513,9 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
             Input => {
             self[pin]=State::Input(false);
                 //self[pin]=State::Output(false);
-                match pin{
-                G0 => {
+                let mut x = usize::from(pin);
+                match x{
+                0 => {
 
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
 
@@ -528,7 +537,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 }
                     
                 },
-                G1 => {
+                1 => {
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
 
                   match handle{
@@ -548,7 +557,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
                },
-                G2 =>{
+                2 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[2],core::mem::uninitialized() )}};
 
                   match handle{
@@ -568,7 +577,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
                },
-                G3 =>{
+                3 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[3],core::mem::uninitialized() )}};
 
                   match handle{
@@ -588,7 +597,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G4 =>{
+                4 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[4],core::mem::uninitialized() )}};
 
                   match handle{
@@ -608,7 +617,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G5 =>{
+                5 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[5],core::mem::uninitialized() )}};
 
                   match handle{
@@ -629,7 +638,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 }
 
             },
-                G6 =>{
+                6 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[6],core::mem::uninitialized() )}};
 
                   match handle{
@@ -650,7 +659,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 }
 
             },
-                G7 =>{
+                7 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[7],core::mem::uninitialized() )}};
 
                   match handle{
@@ -670,13 +679,15 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
+            _=> {},
                 }
 
              },
             Output => {
                 self[pin]=State::Output(false);
-                match pin{
-                G0 => {
+                let mut x = usize::from(pin);
+                match x{
+                0 => {
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
 
                   match handle{
@@ -697,7 +708,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G1 => {
+                1 => {
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
 
                   match handle{
@@ -718,7 +729,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G2 =>{
+                2 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[2],core::mem::uninitialized() )}};
 
                   match handle{
@@ -739,7 +750,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G3 =>{
+                3 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[3],core::mem::uninitialized() )}};
 
                   match handle{
@@ -760,7 +771,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G4 =>{
+                4 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[4],core::mem::uninitialized() )}};
 
                   match handle{
@@ -781,7 +792,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G5 =>{
+                5 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[5],core::mem::uninitialized() )}};
 
                   match handle{
@@ -802,7 +813,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G6 =>{
+                6 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[6],core::mem::uninitialized() )}};
 
                   match handle{
@@ -823,7 +834,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
-                G7 =>{
+                7 =>{
                 let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[7],core::mem::uninitialized() )}};
 
                   match handle{
@@ -844,6 +855,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                  _ =>{}
                 }
             },
+            _=>{},
                 }
             },
             Interrupt => {
