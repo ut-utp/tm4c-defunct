@@ -24,10 +24,10 @@ pub struct PwmShim {
 }
 
 pub struct required_components{
-    sysctl: tm4c123x::SYSCTL,
-    portb: tm4c123x::GPIO_PORTB,
-    pwm0:  tm4c123x::PWM0,
-    pwm1:  tm4c123x::PWM1,
+    pub sysctl: tm4c123x::SYSCTL,
+    pub portb: tm4c123x::GPIO_PORTB,
+    pub pwm0:  tm4c123x::PWM0,
+    pub pwm1:  tm4c123x::PWM1,
 }
 
 impl Default for PwmShim {
@@ -61,12 +61,13 @@ impl PwmShim {
         let sys = peripheral_set.sysctl.constrain();
         let mut portb = peripheral_set.portb.split(&sys.power_control);
         let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
-        p.rcgcpwm.write(|w| unsafe{w.bits(1)});  //activate pwm0
+        p.rcgcpwm.write(|w| unsafe{w.bits(p.rcgcpwm.read().bits() | 1)});  //activate pwm0
         let pwm_output_pin = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
         let pwm_divider = p.rcc.write(|w| unsafe{w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000 ))});
         //let portb_sysctl = peripheral_set.sysctl.rcgcgpio.write(|w| unsafe{w.bits(2)});
         peripheral_set.pwm0.ctl.write(|w| unsafe{w.bits(0)});
         peripheral_set.pwm0._0_gena.write(|w| unsafe{w.bits(0xC8)});
+        
         Self {
             states: PwmPinArr([PwmState::Disabled; PwmPin::NUM_PINS]),
             duty_cycle: PwmPinArr([0; PwmPin::NUM_PINS]), // start with duty_cycle low
@@ -81,11 +82,17 @@ impl PwmShim {
 impl Pwm for PwmShim {
     fn set_state(&mut self, pin: PwmPin, state: PwmState) -> Result<(), PwmSetPeriodError> {
         use PwmState::*;
-        match pin{
-        P0 =>{
+        let x = usize::from(pin);
+        match x{
+
+        0 =>{
         match state{
             Enabled(_) => {
                 let p = unsafe { &*tm4c123x::PWM0::ptr() }; 
+                        //let new_duty = ((duty as u32)*period/256);
+        p._0_load.write(|w| unsafe{w.bits(40000)});
+        p._0_cmpa.write(|w| unsafe{w.bits(4000)});
+        p._0_ctl.write(|w| unsafe{w.bits(p._0_ctl.read().bits() | 1)});
                 p.enable.write(|w| unsafe{w.bits(p.enable.read().bits() | 1)});
 
             }
@@ -96,7 +103,7 @@ impl Pwm for PwmShim {
         }
     }
 
-    P1=> {
+    1=> {
         match state{
             Enabled(_) => {
                // let p = Peripherals::take().unwrap().PWM1; 
@@ -112,6 +119,8 @@ impl Pwm for PwmShim {
         }
 
     }
+
+    _=>{},
     }
         self.states[pin]=state;
 

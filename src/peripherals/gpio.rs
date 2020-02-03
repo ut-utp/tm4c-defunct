@@ -292,6 +292,8 @@ impl physical_pins<'_> {
 
                     },
                    // _=>{},
+
+                   //THIS COULD HAVE BEEN ONE LINE OF CODE IN C!! Rust Single ownership:(
                     1 => {                          
                         let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[1],core::mem::uninitialized() )}};
                             match handle{
