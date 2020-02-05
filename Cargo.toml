@@ -1,30 +1,36 @@
 [package]
-name = "hal_shims"
+name = "lc3-tm4c"
 version = "0.1.0"
-authors = ["Pranav Rama <pranavrama222@gmail.com>"]
+authors = ["UT UTP <ut.utp.group@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# TODO: CI
+# TODO: README
+# TODO: CHANGELOG
+# TODO: all the other keys
+# TODO: lints and attributes for this crate
+# (this is very much just a proof of concept! not a prototype!!)
+# We'll do all these things for the embedded-hal based impl.
+
 
 [dependencies]
 cortex-m = "0.6.0"
 cortex-m-rt = "0.6.10"
 cortex-m-semihosting = "0.3.3"
 panic-halt = "0.2.0"
-lc3-isa = { path = "../isa", version = "0.1.0" }
-lc3-macros = { path = "../macros", version = "0.1.0" }
-lc3-traits = { path = "../traits", version = "0.1.0", default-features = false }
 
-#byteorder = "1.3.2"
-#timer = "0.2.0"
-#time = "0.1.42"
-tm4c123x-hal = {path="../tm4c-hal/tm4c123x-hal",version= "0.10.0"}
+# TODO: All of the below should use crates.io published version instead of git repos.
+lc3-baseline-sim = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
+lc3-isa = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
+lc3-traits = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"]  }
+
+tm4c123x-hal = { git = "https://github.com/thejpster/tm4c-hal", branch = "master", version= "0.10.0" }
 embedded-hal = "0.2.3"
 tm4c123x     = "0.9.0"
 
-[features]
-default = []
-no_std = []
-std_functionality = []
 
+[profile.release]
+codegen-units = 1 # better optimizations
+debug = true # symbols are nice and they don't increase the size on Flash
+lto = true # better optimizations
 

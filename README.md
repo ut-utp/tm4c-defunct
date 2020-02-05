@@ -7,3 +7,5 @@
 Uses [thepster](https://github.com/thejpster/)'s [tm4c-hal crates](https://github.com/thejpster/tm4c-hal) heavily.
 
 🐝 🚧 This is very much not stable yet! 🚧 🐝
+
+This implementation in this branch is mostly a prototype and does not make heavy use of [embedded-hal](https://github.com/rust-embedded/embedded-hal).
