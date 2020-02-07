@@ -288,7 +288,7 @@ impl<'a> Timers<'a> for TimersShim<'a> {
         self.times[timer]
     }
 
-    fn register_interrupt_flag(&mut self, timer: TimerId, flag: &'a AtomicBool) {
+    fn register_interrupt_flags(&mut self, flags: &'a TimerArr<AtomicBool>) {
         // self.flags[timer] = match self.flags[timer] {
         //     None => Some(flag),
         //     Some(_) => unreachable!(),

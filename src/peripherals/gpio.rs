@@ -1043,11 +1043,11 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
     }
 
     // TODO: decide functionality when no previous flag registered
-    fn register_interrupt_flag(&mut self, pin: GpioPin, flag: &'a AtomicBool) {
-        self.flags[pin] = match self.flags[pin] {
-            None => Some(flag),
-            Some(_) => unreachable!(),
-        }
+    fn register_interrupt_flags(&mut self, flags: &'a GpioPinArr<AtomicBool>) {
+        // self.flags[pin] = match self.flags[pin] {
+        //     None => Some(flag),
+        //     Some(_) => unreachable!(),
+        // }
     }
 
     fn interrupt_occurred(&self, pin: GpioPin) -> bool {
