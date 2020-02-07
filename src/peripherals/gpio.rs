@@ -287,24 +287,7 @@ impl physical_pins<'_> {
                 self[pin] = Output(bit);
                 let mut x = usize::from(pin);
                 match x {
-                    //let mut handle = {unsafe {core::mem::replace(&mut self.mapping2[0],core::mem::uninitialized() )}};
 
-                    //   match handle{
-                    //       PhysicalPins::g0(mut val) =>  {
-                    //         match val{
-                    //             State2::Input(mut ins) => {
-                    //                 let new_out = ins.into_push_pull_output();
-                    //                 core::mem::replace(&mut self.mapping2[0],PhysicalPins::g0(State2::Output(new_out))) ;
-                    //             },
-                    //             State2::Output(mut out) => {
-                    //             },
-                    //     _=>{},
-
-                    //   }
-
-                    //  }
-                    //  _ =>{}
-                    // }
                     0 => {
                         let mut handle = {
                             unsafe {
@@ -335,9 +318,6 @@ impl physical_pins<'_> {
                             _ => {}
                         }
                     }
-                    // _=>{},
-
-                    //THIS COULD HAVE BEEN ONE LINE OF CODE IN C!! Rust Single ownership:(
                     1 => {
                         let mut handle = {
                             unsafe {
