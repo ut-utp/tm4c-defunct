@@ -14,6 +14,12 @@ use tm4c123x_hal::{
     prelude::_embedded_hal_digital_InputPin, prelude::_embedded_hal_digital_OutputPin,
 };
 use tm4c123x_hal::{prelude::*, Peripherals};
+
+
+
+
+
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 
 //static mut peripheral: tm4c123x_hal::Peripherals = Peripherals::take().unwrap();
@@ -176,6 +182,8 @@ impl physical_pins<'_> {
             State::Input(false),
         ];
         let p_st = peripheral_set;
+
+
         //let mut sc = sys_init();
         // let x = p_st.GPIO_PORTA;
         let porta = (p_st.porta.split(power));

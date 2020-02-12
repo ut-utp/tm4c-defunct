@@ -70,16 +70,23 @@ impl PwmShim {
         let mut portb = peripheral_set.portb.split(&sys.power_control);
         let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
         p.rcgcpwm
-            .write(|w| unsafe { w.bits(p.rcgcpwm.read().bits() | 1) }); //activate pwm0
+            .write(|w| unsafe { w.bits(p.rcgcpwm.read().bits() | 3) }); //activate pwm0
         let pwm_output_pin = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pwm_output_pin2 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
         let pwm_divider = p
             .rcc
             .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
         //let portb_sysctl = peripheral_set.sysctl.rcgcgpio.write(|w| unsafe{w.bits(2)});
         peripheral_set.pwm0.ctl.write(|w| unsafe { w.bits(0) });
+        peripheral_set.pwm1.ctl.write(|w| unsafe { w.bits(0) });
         peripheral_set
             .pwm0
             ._0_gena
+            .write(|w| unsafe { w.bits(0xC8) });
+
+        peripheral_set
+            .pwm1
+            ._1_gena
             .write(|w| unsafe { w.bits(0xC8) });
 
         Self {
@@ -123,8 +130,14 @@ impl Pwm for PwmShim {
                     Enabled(_) => {
                         // let p = Peripherals::take().unwrap().PWM1;
                         let p = unsafe { &*tm4c123x::PWM1::ptr() };
+                        p._1_load.write(|w| unsafe{w.bits(40000)});
+                        p._1_cmpa.write(|w| unsafe{w.bits(4000)});
+                        p._1_ctl.write(|w| unsafe{w.bits(p._1_ctl.read().bits() | 1)});
                         p.enable
                             .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
+                   
+
+
                     }
                     Disabled => {
                         let p = unsafe { &*tm4c123x::PWM1::ptr() };

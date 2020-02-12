@@ -43,4 +43,5 @@
 #![doc(html_logo_url = "")] // TODO!
 #![no_std]
 
-pub mod peripherals;
+pub mod peripherals_tm4c;
+pub mod peripherals_generic;
