@@ -104,7 +104,7 @@ use tm4c123x_hal::sysctl::Clocks;
              let t1 = peripheral_set.timer0;
              let t2 = peripheral_set.timer1;
              let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
-             p.rcgcadc.write(|w| unsafe{w.bits(p.rcgctimer.read().bits() | 3)});  //activate timer0, 1
+             p.rcgctimer.write(|w| unsafe{w.bits(p.rcgctimer.read().bits() | 3)});  //activate timer0, 1
     //     let mut sc = Peripherals::take().unwrap().SYSCTL.constrain();
     // sc.clock_setup.oscillator = tm4c123x_hal::sysctl::Oscillator::Main(
     //     tm4c123x_hal::sysctl::CrystalFrequency::_16mhz,
@@ -154,6 +154,7 @@ use tm4c123x_hal::sysctl::Clocks;
              //power: sc.power_control
          }
      }
+
      
  }
 
