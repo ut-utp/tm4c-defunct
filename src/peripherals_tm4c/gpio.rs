@@ -19,7 +19,6 @@ use tm4c123x_hal::{prelude::*, Peripherals};
 
 
 
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 
 //static mut peripheral: tm4c123x_hal::Peripherals = Peripherals::take().unwrap();
@@ -1061,3 +1060,18 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
         self.get_state(pin) == Interrupt
     }
 }
+
+use cortex_m_rt_macros::interrupt;
+use tm4c123x::Interrupt as interrupt;
+
+#[interrupt]
+fn GPIOE(){
+
+}
+
+#[interrupt]
+fn GPIOA(){
+
+}
+// fn SysTick() {
+// }

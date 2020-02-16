@@ -27,6 +27,7 @@ lc3-traits = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0
 tm4c123x-hal = { git = "https://github.com/thejpster/tm4c-hal", branch = "master", version= "0.10.0" }
 embedded-hal = "0.2.3"
 tm4c123x     = "0.9.0"
+cortex-m-rt-macros = "0.1.5"
 
 
 [profile.release]

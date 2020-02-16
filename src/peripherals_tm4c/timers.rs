@@ -15,6 +15,7 @@ use core::marker::PhantomData;
 use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x_hal::time::MegaHertz;
 use tm4c123x_hal::sysctl::Clocks;
+use tm4c123x::NVIC as nvic;
 //use time;
 //use timer;
  enum PhysicalTimers{
@@ -99,7 +100,7 @@ use tm4c123x_hal::sysctl::Clocks;
 
  impl TimersShim<'_> {
 
-     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components) -> Self {
+     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components, nvic_field: tm4c123x::NVIC) -> Self {
 
              let t1 = peripheral_set.timer0;
              let t2 = peripheral_set.timer1;
@@ -135,6 +136,14 @@ use tm4c123x_hal::sysctl::Clocks;
         t1.imr.write(|w| unsafe{w.bits(1)});
         t1.ctl.write(|w| unsafe{w.bits(1)});
 
+        //let nvicp = unsafe { &*tm4c123x::NVIC::ptr() };
+        // let nvic_peripheral = tm4c123x::NVIC{
+        //     _marker: core::marker::PhantomData,
+        // };
+        unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER0A);};
+       // nvic_field::NVIC.set_priority(tm4c123x::Interrupt::TIMER0A, 4);
+       // unsafe{nvic::set_priority(tm4c123x::Interrupt::TIMER0A, 4);};
+
         t2.ctl.write(|w| unsafe{w.bits(0)});
         t2.cfg.write(|w| unsafe{w.bits(0)});
         t2.tamr.write(|w| unsafe{w.bits(2)});
@@ -143,6 +152,11 @@ use tm4c123x_hal::sysctl::Clocks;
         t2.icr.write(|w| unsafe{w.bits(1)});
         t2.imr.write(|w| unsafe{w.bits(1)});
         t2.ctl.write(|w| unsafe{w.bits(1)});
+       // let peri = tm4c123x::CorePeripherals::take().unwrap();
+       // let mut nvic_field = peri.NVIC;
+        let mut nvic_f = nvic_field;
+        unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER1A);};
+        unsafe{nvic_f.set_priority(tm4c123x::Interrupt::TIMER1A, 4);};
          Self {
              states: TimerArr([TimerState::Disabled; TimerId::NUM_TIMERS]),
              times: TimerArr([0u16; TimerId::NUM_TIMERS]), // unlike gpio, interrupts occur on time - not on bit change
@@ -434,4 +448,22 @@ fn scratch(){
         &sys_init(),
         &Clocks{osc:Hertz(80000000), sysclk:Hertz(80000000)},
     );
+}
+
+
+use cortex_m_rt_macros::interrupt;
+use tm4c123x::Interrupt as interrupt;
+
+#[interrupt]
+fn TIMER0A(){
+    static mut COUNT: u32 = 0;
+
+    // `COUNT` has type `&mut u32` and it's safe to use
+    *COUNT += 1;
+
+}
+
+#[interrupt]
+fn TIMER1A(){
+
 }
