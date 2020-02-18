@@ -19,13 +19,15 @@ static PWM_SHIM_PINS: PwmPinArr<AtomicBool> =
 pub struct PwmShim {
     states: PwmPinArr<PwmState>,
     duty_cycle: PwmPinArr<u8>,
-    //components: Option<required_components>,
+    components: Option<required_components>,
     //guards: PwmPinArr<Option<timer::Guard>>,
 }
 
 pub struct required_components {
-    pub sysctl: tm4c123x::SYSCTL,
-    pub portb: tm4c123x::GPIO_PORTB,
+   // pub sysctl: tm4c123x::SYSCTL,
+  //  pub portb: tm4c123x::GPIO_PORTB,
+    pub pb6: tm4c123x_hal::gpio::gpiob::PB6<AlternateFunction<AF::4, PushPull>>,
+    pub pb7: tm4c123x_hal::gpio::gpiob::PB7<AlternateFunction<AF::4, PushPull>>,
     pub pwm0: tm4c123x::PWM0,
     pub pwm1: tm4c123x::PWM1,
 }
@@ -58,6 +60,7 @@ impl Default for PwmShim {
         Self {
             states: PwmPinArr([PwmState::Disabled; PwmPin::NUM_PINS]),
             duty_cycle: PwmPinArr([0; PwmPin::NUM_PINS]), // start with duty_cycle low
+            components: None
                                                           //components: None
                                                           // guards: PwmPinArr([None, None]),
         }
@@ -65,14 +68,14 @@ impl Default for PwmShim {
 }
 
 impl PwmShim {
-    pub fn new(peripheral_set: required_components) -> Self {
-        let sys = peripheral_set.sysctl.constrain();
-        let mut portb = peripheral_set.portb.split(&sys.power_control);
+    pub fn new(mut peripheral_set: required_components, mut portb: tm4c123x_hal::gpio::gpiob) -> Self {
+        //let sys = peripheral_set.sysctl.constrain();
+       // let mut portb = peripheral_set.portb;
         let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
         p.rcgcpwm
             .write(|w| unsafe { w.bits(p.rcgcpwm.read().bits() | 3) }); //activate pwm0
-        let pwm_output_pin = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
-        let pwm_output_pin2 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pb6 = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
         let pwm_divider = p
             .rcc
             .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
@@ -92,6 +95,15 @@ impl PwmShim {
         Self {
             states: PwmPinArr([PwmState::Disabled; PwmPin::NUM_PINS]),
             duty_cycle: PwmPinArr([0; PwmPin::NUM_PINS]), // start with duty_cycle low
+            components: Some(required_components{
+                pb6:   pb6,
+                pb7:   pb7,
+                pwm0:  peripheral_set.pwm0,
+                pwm1:  peripheral_set.pwm1,
+
+
+
+            }),
                                                           //components: Some(peripheral_set),
                                                           // guards: PwmPinArr([None, None]),
         }

@@ -80,8 +80,8 @@ pub trait Flash<'a> {
 }
 
 pub struct tm4c_flash_unit{
-	info: TM4C_FLASH_INFO,
-  flash_ctrl: required_components,
+	//info: TM4C_FLASH_INFO,
+  //flash_ctrl: required_components,
 }
 
 //All the registers we need from tm4c123x crate
