@@ -9,8 +9,8 @@ use cortex_m_rt::entry;
 use cortex_m_semihosting::{debug, hprintln};
 use hal::prelude::*;
 //use hal::{gpio, Peripherals};
-use hal_shims::peripherals::gpio;
-use hal_shims::peripherals::gpio::required_components;
+use lc3_tm4c::peripherals_tm4c::gpio;
+use lc3_tm4c::peripherals_tm4c::gpio::required_components;
 use lc3_traits::peripherals::gpio::{
     Gpio, GpioMiscError, GpioPin, GpioPinArr, GpioReadError, GpioState, GpioWriteError,
 };

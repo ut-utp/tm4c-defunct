@@ -12,8 +12,8 @@ use lc3_traits::peripherals::adc::{
     AdcStateMismatch as StateMismatch,
 };
 
-use hal_shims::peripherals::adc;
-use hal_shims::peripherals::adc::required_components;
+use lc3_tm4c::peripherals_tm4c::adc;
+use lc3_tm4c::peripherals_tm4c::adc::required_components;
 
 #[entry]
 fn main() -> ! {

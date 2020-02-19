@@ -11,8 +11,8 @@ use lc3_traits::peripherals::pwm::{
     Pwm, PwmPin, PwmPinArr, PwmSetDutyError, PwmSetPeriodError, PwmState,
 };
 
-use hal_shims::peripherals::pwm;
-use hal_shims::peripherals::pwm::required_components;
+use lc3_tm4c::peripherals_tm4c::pwm;
+use lc3_tm4c::peripherals_tm4c::pwm::required_components;
 
 #[entry]
 fn main() -> ! {
