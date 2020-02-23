@@ -16,20 +16,29 @@ use tm4c123x_hal::{prelude::*, Peripherals};
 static PWM_SHIM_PINS: PwmPinArr<AtomicBool> =
     PwmPinArr([AtomicBool::new(false), AtomicBool::new(false)]);
 
+pub enum PhysicalPins {
+    p0(tm4c123x_hal::gpio::gpiob::PB6<AlternateFunction<AF4, PushPull>>),
+    p1(tm4c123x_hal::gpio::gpiob::PB7<AlternateFunction<AF4, PushPull>>),
+}
+
 pub struct PwmShim {
     states: PwmPinArr<PwmState>,
     duty_cycle: PwmPinArr<u8>,
-   // components: Option<required_components>,
+    pwm_physical_pins: [PhysicalPins; 2],
+    pub pwm0: tm4c123x::PWM0,
+    pub pwm1: tm4c123x::PWM1,
+    //components: Option<required_components>,
     //guards: PwmPinArr<Option<timer::Guard>>,
 }
 
 pub struct required_components {
-    pub sysctl: tm4c123x::SYSCTL,
+   // pub sysctl: tm4c123x::SYSCTL,
     pub portb: tm4c123x::GPIO_PORTB,
-    //pub pb6: tm4c123x_hal::gpio::gpiob::PB6<AlternateFunction<AF::4, PushPull>>,
-    //pub pb7: tm4c123x_hal::gpio::gpiob::PB7<AlternateFunction<AF::4, PushPull>>,
     pub pwm0: tm4c123x::PWM0,
     pub pwm1: tm4c123x::PWM1,
+    //pub pb6: tm4c123x_hal::gpio::gpiob::PB6<AlternateFunction<AF::4, PushPull>>,
+    //pub pb7: tm4c123x_hal::gpio::gpiob::PB7<AlternateFunction<AF::4, PushPull>>,
+
 }
 
 impl Default for PwmShim {
@@ -49,6 +58,8 @@ impl Default for PwmShim {
             .write(|w| unsafe { w.bits(2) }); //activate port b
         let mut portb = p.GPIO_PORTB.split(&sc.power_control);
         let pwm_output_pin = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+       // let pb6 = peripheral_set.pb6.into_af_push_pull::<gpio::AF4>(power); //pwm0 pb6
+        let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
         let p = Peripherals::take().unwrap().SYSCTL;
         let pwm_divider = p
             .rcc
@@ -60,7 +71,7 @@ impl Default for PwmShim {
         Self {
             states: PwmPinArr([PwmState::Disabled; PwmPin::NUM_PINS]),
             duty_cycle: PwmPinArr([0; PwmPin::NUM_PINS]), // start with duty_cycle low
-           // components: None
+            pwm_physical_pins: [PhysicalPins::p0(pwm_output_pin), PhysicalPins::p1(pb7)],
                                                           //components: None
                                                           // guards: PwmPinArr([None, None]),
         }
@@ -68,18 +79,19 @@ impl Default for PwmShim {
 }
 
 impl PwmShim {
-    pub fn new(mut peripheral_set: required_components) -> Self {
+    pub fn new(mut peripheral_set: required_components, power: &tm4c123x_hal::sysctl::PowerControl,) -> Self {
         //let sys = peripheral_set.sysctl.constrain();
-        let mut portb = peripheral_set.portb;
+       // let mut portb = peripheral_set.portb;
+       let mut portb = peripheral_set.portb.split(power);
         let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
         p.rcgcpwm
             .write(|w| unsafe { w.bits(p.rcgcpwm.read().bits() | 3) }); //activate pwm0
-        ////let pb6 = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
-        //let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pb6 = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
         let pwm_divider = p
             .rcc
             .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
-        let portb_sysctl = peripheral_set.sysctl.rcgcgpio.write(|w| unsafe{w.bits(2)});
+        //let portb_sysctl = peripheral_set.sysctl.rcgcgpio.write(|w| unsafe{w.bits(2)});
         peripheral_set.pwm0.ctl.write(|w| unsafe { w.bits(0) });
         peripheral_set.pwm1.ctl.write(|w| unsafe { w.bits(0) });
         peripheral_set
@@ -104,7 +116,10 @@ impl PwmShim {
 
 
             // }),
-                                                          //components: Some(peripheral_set),
+             pwm_physical_pins: [PhysicalPins::p0(pb6), PhysicalPins::p1(pb7)],
+             pwm0: ,
+             pwm1: ,
+            //                                               //components: Some(peripheral_set),
                                                           // guards: PwmPinArr([None, None]),
         }
     }
@@ -120,14 +135,35 @@ impl Pwm for PwmShim {
             0 => {
                 match state {
                     Enabled(_) => {
-                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
-                        //let new_duty = ((duty as u32)*period/256);
-                        p._0_load.write(|w| unsafe { w.bits(40000) });
-                        p._0_cmpa.write(|w| unsafe { w.bits(4000) });
-                        p._0_ctl
-                            .write(|w| unsafe { w.bits(p._0_ctl.read().bits() | 1) });
-                        p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
+                        //let p = unsafe { &*tm4c123x::PWM0::ptr() };
+                        let mut handle = {
+                            unsafe {
+                                core::mem::replace(
+                                    &mut self.pwm_physical_pins[0],
+                                    core::mem::uninitialized(),
+                                )
+                            }
+                        };
+
+                        match handle {
+                            PhysicalPins::p0(pin_out) =>{
+                                 self.pwm0._0_load.write(|w| unsafe { w.bits(40000) });
+                                 self.pwm0._0_cmpa.write(|w| unsafe { w.bits(4000) });
+                                 self.pwm0._0_ctl
+                                    .write(|w| unsafe { w.bits(p._0_ctl.read().bits() | 1) });
+                                 self.pwm0.enable
+                                    .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) }); 
+
+                                     core::mem::replace(
+                                        &mut self.pwm_physical_pins[0],
+                                        PhysicalPins::p0(pin_out));                              
+                            },
+
+                            _ =>{},
+
+
+                        }
+
                     }
                     Disabled => {
                         let p = unsafe { &*tm4c123x::PWM0::ptr() };

@@ -288,7 +288,7 @@ impl physical_pins<'_> {
         use physical_pin_mappings::*;
         use PhysicalPins::*;
         use State::*;
-
+        
         match self[pin] {
             _ => {
                 self[pin] = Output(bit);

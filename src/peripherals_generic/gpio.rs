@@ -194,14 +194,14 @@ where
     G6In: InputPin + IntoOutput + IntoInput + Interrupts,
     G7In: InputPin + IntoOutput + IntoInput + Interrupts,
 {
-    g0: PhysGpioPin<G0In, <G0In as IntoOutput>::Output>,
-    g1: PhysGpioPin<G1In, <G1In as IntoOutput>::Output>,
-    g2: PhysGpioPin<G2In, <G2In as IntoOutput>::Output>,
-    g3: PhysGpioPin<G3In, <G3In as IntoOutput>::Output>,
-    g4: PhysGpioPin<G4In, <G4In as IntoOutput>::Output>,
-    g5: PhysGpioPin<G5In, <G5In as IntoOutput>::Output>,
-    g6: PhysGpioPin<G6In, <G6In as IntoOutput>::Output>,
-    g7: PhysGpioPin<G7In, <G7In as IntoOutput>::Output>,
+   pub g0: PhysGpioPin<G0In, <G0In as IntoOutput>::Output>,
+   pub g1: PhysGpioPin<G1In, <G1In as IntoOutput>::Output>,
+   pub g2: PhysGpioPin<G2In, <G2In as IntoOutput>::Output>,
+   pub g3: PhysGpioPin<G3In, <G3In as IntoOutput>::Output>,
+   pub g4: PhysGpioPin<G4In, <G4In as IntoOutput>::Output>,
+   pub g5: PhysGpioPin<G5In, <G5In as IntoOutput>::Output>,
+   pub g6: PhysGpioPin<G6In, <G6In as IntoOutput>::Output>,
+   pub g7: PhysGpioPin<G7In, <G7In as IntoOutput>::Output>,
 }
 
 impl<G0, G1, G2, G3, G4, G5, G6, G7> GpioPinBlock<G0, G1, G2, G3, G4, G5, G6, G7>

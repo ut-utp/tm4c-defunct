@@ -17,8 +17,8 @@ use tm4c123x_hal::{prelude::*, Peripherals};
 // uint8_t	erased_value	Contents of erased memory (usually 0xFF)
 // uint8_t	reserved[3]	Reserved (must be zero)
 
-pub const MAX_READABLE_WORDS:   usize = 512;
-pub const MAX_WRITABLE_WORDS:   usize = 512;
+pub const MAX_READABLE_WORDS:   usize = 100;
+pub const MAX_WRITABLE_WORDS:   usize = 100;
 pub const FLASH_FMA_OFFSET_MAX: u32   = 0x0003FFFF;
 pub const FLASH_FMC_MERASE:      u32 =  0x00000004;  // Mass Erase Flash Memory
 pub const FLASH_FMC_ERASE:      u32 =  0x00000002;  // Erase a Page of Flash Memory
@@ -71,7 +71,7 @@ pub trait Flash<'a> {
 	fn TM4C_Flash_Uninitialize(&mut self) -> status_error_codes;
 	fn TM4C_Flash_ReadData(&mut self, addr: u32, data: [u32; MAX_READABLE_WORDS], num_items: u8) -> status_error_codes;
   fn TM4C_Flash_WriteWord(&mut self, addr: u32, data: u32)-> status_error_codes;
-	fn TM4C_Flash_ProgramData(&mut self, addr: u32, data: [u32; MAX_WRITABLE_WORDS])-> status_error_codes;
+	fn TM4C_Flash_ProgramData(&mut self, addr: u32, data: [usize; MAX_WRITABLE_WORDS])-> status_error_codes;
 	fn TM4C_Flash_EraseSector(&mut self, addr: u32) -> status_error_codes;
 	fn TM4C_Flash_EraseChip(&mut self) -> status_error_codes;
 	fn TM4C_Flash_GetStatus(&mut self);
@@ -149,7 +149,7 @@ impl Flash <'_> for tm4c_flash_unit{
 }
 
 
-	fn TM4C_Flash_ProgramData(&mut self, addr: u32, data: [u32; MAX_WRITABLE_WORDS])-> status_error_codes{
+	fn TM4C_Flash_ProgramData(&mut self, addr: u32, data: [usize; MAX_WRITABLE_WORDS])-> status_error_codes{
 
   // uint16_t successfulWrites = 0;
   // while((successfulWrites < count) && (Flash_Write(addr + 4*successfulWrites, source[successfulWrites]) == NOERROR)){
@@ -158,7 +158,8 @@ impl Flash <'_> for tm4c_flash_unit{
   // return successfulWrites;
   let mut successfulWrites: u32 =0;
    while((successfulWrites < (MAX_WRITABLE_WORDS as u32) )){
-     self.TM4C_Flash_WriteWord(addr + (4*successfulWrites), data[successfulWrites as usize]);
+    // let current_addr = addr + (4*successfulWrites);
+     self.TM4C_Flash_WriteWord(addr + (4*successfulWrites), data[successfulWrites as usize] as u32);
      successfulWrites = successfulWrites + 1;
    } 
 

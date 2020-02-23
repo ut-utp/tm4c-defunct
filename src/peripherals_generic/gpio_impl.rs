@@ -53,6 +53,7 @@ where
         Self {
  			flags:     GpioPinArr([None; GpioPin::NUM_PINS]),
  			pin_block: Some(gpio_generic::GpioPinBlock::new(g0, g1, g2, g3, g4, g5, g6, g7)),
+
         }
     }
 }
@@ -71,6 +72,154 @@ where
     G7: InputPin + IntoOutput + IntoInput + Interrupts,
  {   
     fn set_state(&mut self, pin: GpioPin, state: GpioState) -> Result<(), GpioMiscError>{
+        
+        use crate::peripherals_generic::gpio::PhysGpioPin;
+        let x = usize::from(pin);
+
+        match x{
+            0 => {
+                match state{
+                    Input =>{
+                        let opt_handle = unsafe{
+                                core::mem::replace(
+                                    &mut self.pin_block,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+                        match opt_handle{
+                        Some(mut handle) => {
+
+                            let mut handle2 = unsafe {
+                                core::mem::replace(
+                                    &mut handle.g0,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+
+
+                        match handle2{
+                            PhysGpioPin::Input(pin) =>{
+                               let out = pin.into_output();
+                            core::mem::replace(
+                            &mut handle.g0,
+                            PhysGpioPin::Output(out),
+                            );
+
+                            },
+                            _=>{},
+
+
+
+                        };
+
+                       // handle2.g0 = pin_handle;
+
+
+                        core::mem::replace(
+                            &mut self.pin_block,
+                            Some(handle),
+                        );
+                        },
+                        None =>{},
+
+
+                    }
+
+                    
+
+                    },
+                    _=>{}
+
+
+
+                    Output =>{
+                        let opt_handle = unsafe{
+                                core::mem::replace(
+                                    &mut self.pin_block,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+                        match opt_handle{
+                        Some(mut handle) => {
+
+                            let mut handle2 = unsafe {
+                                core::mem::replace(
+                                    &mut handle.g0,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+
+
+                        match handle2{
+                            PhysGpioPin::Output(pin) =>{
+                               let inp = pin.into_input();
+                            core::mem::replace(
+                            &mut handle.g0,
+                            PhysGpioPin::Input(inp),
+                            );
+
+                            },
+                            _=>{},
+
+
+
+                        };
+
+                       // handle2.g0 = pin_handle;
+
+
+                        core::mem::replace(
+                            &mut self.pin_block,
+                            Some(handle),
+                        );
+                        },
+                        None =>{},
+
+
+                    }
+
+                    
+
+                    },
+                    _=>{}
+
+                    _=>{}
+
+                };
+
+
+            },
+
+            1=>{
+
+            },
+
+            2 =>{
+
+            },
+            3 => {
+
+            },
+            4 => {
+
+            },
+            4 => {
+
+            },
+            5 => {
+
+            },
+            6 => {
+
+            },
+            7 => {
+
+            },
+            _=>{
+
+            },
+
+        }
     	Ok(())
 
     }
@@ -138,6 +287,16 @@ where
     }
 }
 
+extern crate embedded_hal;
+extern crate tm4c123x_hal;
+
+
+
+use tm4c123x_hal::gpio::{gpioa::*, gpiob::*, gpioe::*, gpiof::*};
+use tm4c123x_hal::gpio::*;
+use tm4c123x_hal::{
+    prelude::_embedded_hal_digital_InputPin, prelude::_embedded_hal_digital_OutputPin,
+};
 
 impl <'a, G0, G1, G2, G3, G4, G5, G6, G7>  Default for physical_pins<'_, G0, G1, G2, G3, G4, G5, G6, G7> 
 where
@@ -152,7 +311,28 @@ where
     G7: InputPin + IntoOutput + IntoInput + Interrupts,
 {
 
+
 	fn default() -> Self {
+        // let p_st = tm4c123x_hal::Peripherals::take().unwrap();
+        // let mut sc = p_st.SYSCTL.constrain();
+        // let mut porta = p_st.GPIO_PORTF.split(&sc.power_control);
+        // let mut gpioa0 = porta.pf1;
+        // gpioa0.set_low();
+        // let mut gpioa1 = porta.pf2;
+        // gpioa1.set_high();
+        // let mut gpioa2 = porta.pf3;
+        // gpioa2.set_low();
+        // let mut gpioa3 = porta.pf4;
+        // gpioa3.set_low();
+
+        // let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
+        // let mut gpioe0 = porte.pe0;
+        // //   gpioe0.set_low();            //input - no init state
+        // let mut gpioe1 = porte.pe1;
+        // //  gpioe1.set_low();
+        // let mut gpioe2 = porte.pe2;
+        // //  gpioe2.set_low();
+        // let mut gpioe3 = porte.pe3;
 			Self{
  			flags:     GpioPinArr([None; GpioPin::NUM_PINS]),
  			pin_block: None,
@@ -161,5 +341,8 @@ where
 
 
 }
+
+
+
 
 
