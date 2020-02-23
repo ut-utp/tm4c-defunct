@@ -9,8 +9,9 @@ use embedded_hal::digital::v2::{InputPin, OutputPin};
 
 //Generic imports
 use crate::peripherals_generic::gpio as gpio_generic;
-use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts};
+use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts, set_bit};
 
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
     Input(bool),
     Output(bool),
@@ -18,6 +19,20 @@ pub enum State {
     Disabled,
 }
 
+
+
+impl From<State> for GpioState {
+    fn from(state: State) -> GpioState {
+        use GpioState::*;
+
+        match state {
+            State::Input(_) => Input,
+            State::Output(_) => Output,
+            State::Interrupt(_) => Interrupt,
+            State::Disabled => Disabled,
+        }
+    }
+}
 pub struct physical_pins<'a, G0In, G1In, G2In, G3In, G4In, G5In, G6In, G7In> 
 where
 	G0In: InputPin + IntoOutput + Interrupts + IntoInput,
@@ -29,11 +44,47 @@ where
     G6In: InputPin + IntoOutput + Interrupts + IntoInput,
     G7In: InputPin + IntoOutput + Interrupts + IntoInput,
  {
-   // states: GpioPinArr<State>,
+    states: GpioPinArr<State>,
     flags: GpioPinArr<Option<&'a AtomicBool>>,
     //mapping: [physical_pin_mappings; 8],
     pin_block: Option<gpio_generic::GpioPinBlock::<G0In, G1In, G2In, G3In, G4In, G5In, G6In, G7In>>,
     //Peripheral_set: Option<&'a mut tm4c123x_hal::Peripherals>,
+}
+
+impl <'a, G0, G1, G2, G3, G4, G5, G6, G7> Index<GpioPin> for physical_pins<'_, G0, G1, G2, G3, G4, G5, G6, G7>
+where
+    G0: InputPin + IntoOutput + Interrupts + IntoInput,
+    G1: InputPin + IntoOutput + Interrupts + IntoInput,
+    G2: InputPin + IntoOutput + Interrupts + IntoInput,
+    G3: InputPin + IntoOutput + Interrupts + IntoInput,
+    G4: InputPin + IntoOutput + Interrupts + IntoInput,
+    G5: InputPin + IntoOutput + Interrupts + IntoInput,
+    G6: InputPin + IntoOutput + Interrupts + IntoInput,
+    G7: InputPin + IntoOutput + Interrupts + IntoInput,
+
+{
+    type Output = State;
+
+    fn index(&self, pin: GpioPin) -> &State {
+        &self.states[pin]
+    }
+}
+
+impl<'a, G0, G1, G2, G3, G4, G5, G6, G7>  IndexMut<GpioPin> for physical_pins<'_, G0, G1, G2, G3, G4, G5, G6, G7> 
+where
+    G0: InputPin + IntoOutput + Interrupts + IntoInput,
+    G1: InputPin + IntoOutput + Interrupts + IntoInput,
+    G2: InputPin + IntoOutput + Interrupts + IntoInput,
+    G3: InputPin + IntoOutput + Interrupts + IntoInput,
+    G4: InputPin + IntoOutput + Interrupts + IntoInput,
+    G5: InputPin + IntoOutput + Interrupts + IntoInput,
+    G6: InputPin + IntoOutput + Interrupts + IntoInput,
+    G7: InputPin + IntoOutput + Interrupts + IntoInput,
+
+{
+    fn index_mut(&mut self, pin: GpioPin) -> &mut State {
+        &mut self.states[pin]
+    }
 }
 
 
@@ -50,7 +101,18 @@ where
     G7: InputPin + IntoOutput + IntoInput + Interrupts,
 {
     fn new(g0: G0, g1: G1, g2: G2, g3: G3, g4: G4, g5: G5, g6: G6, g7: G7) -> Self {
+        let mut states_init = [
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+        ];
         Self {
+            states: GpioPinArr(states_init),
  			flags:     GpioPinArr([None; GpioPin::NUM_PINS]),
  			pin_block: Some(gpio_generic::GpioPinBlock::new(g0, g1, g2, g3, g4, g5, g6, g7)),
 
@@ -79,7 +141,7 @@ where
         match x{
             0 => {
                 match state{
-                    Input =>{
+                    Output =>{
                         let opt_handle = unsafe{
                                 core::mem::replace(
                                     &mut self.pin_block,
@@ -119,6 +181,7 @@ where
                             &mut self.pin_block,
                             Some(handle),
                         );
+                        self[pin] = State::Output(false);
                         },
                         None =>{},
 
@@ -132,7 +195,7 @@ where
 
 
 
-                    Output =>{
+                    Input =>{
                         let opt_handle = unsafe{
                                 core::mem::replace(
                                     &mut self.pin_block,
@@ -178,7 +241,7 @@ where
 
                     }
 
-                    
+                    self[pin] = State::Input(false);
 
                     },
                     _=>{}
@@ -225,32 +288,31 @@ where
     }
 
     fn get_state(&self, pin: GpioPin) -> GpioState {
-    	GpioState::Input
-       // self.get_pin_state(pin)
+    	//GpioState::Input
+        //self.get_pin_state(pin)
+        self[pin].into()
     }
 
     fn read(&self, pin: GpioPin) -> Result<bool, GpioReadError> {
-        //use State::*;
+        use State::*;
 
-        // if let Input(b) | Interrupt(b) = self[pin] {
-        //     Ok(b)
-        // } else {
-        //     Err(GpioReadError((pin, self[pin].into())))
-        // }
-        Ok((true))
+        if let Input(b) | Interrupt(b) = self[pin] {
+            Ok(b)
+        } else {
+            Err(GpioReadError((pin, self[pin].into())))
+        }
     }
 
     fn write(&mut self, pin: GpioPin, bit: bool) -> Result<(), GpioWriteError> {
         // use State::*;
 
-        // if let Output(_) = self[pin] {
-        //     self[pin] = Output(bit);
-        //     Ok(())
-        // } else {
-        //     Err(GpioWriteError((pin, self[pin].into())))
-        // }
+        if let State::Output(_) = self[pin] {
+            self[pin] = State::Output(bit);
+            Ok(())
+        } else {
+            Err(GpioWriteError((pin, self[pin].into())))
+        }
 
-        Ok(())
     }
 
     // TODO: decide functionality when no previous flag registered
@@ -333,7 +395,18 @@ where
         // let mut gpioe2 = porte.pe2;
         // //  gpioe2.set_low();
         // let mut gpioe3 = porte.pe3;
+        let mut states_init = [
+            State::Output(false),
+            State::Output(false),
+            State::Output(false),
+            State::Output(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+            State::Input(false),
+        ];
 			Self{
+            states: GpioPinArr(states_init),
  			flags:     GpioPinArr([None; GpioPin::NUM_PINS]),
  			pin_block: None,
  		}
