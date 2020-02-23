@@ -7,7 +7,7 @@ use tm4c123x_hal::{
 };
 
 use crate::peripherals_generic::gpio as gpio_generic;
-use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts, set_bit};
+use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts};
 impl IntoInput for PF1<Output<PushPull>> {
     type Input = PF1<Input<PullUp>>;
     
@@ -16,19 +16,19 @@ impl IntoInput for PF1<Output<PushPull>> {
     }
 }
 
-impl set_bit for PF1<Output<PushPull>> {
-    //type Output = PF1<Ouptput<PullUp>>;
+// impl set_bit for PF1<Output<PushPull>> {
+//     //type Output = PF1<Ouptput<PullUp>>;
     
-    fn change_bit(&mut self, val: bool) {
-        if(val){
-        self.set_high();
-    }
-        else{
-            self.set_low();
-        }
-       // self
-    }
-}
+//     fn change_bit(&mut self, val: bool) {
+//         if(val){
+//         self.set_high();
+//     }
+//         else{
+//             self.set_low();
+//         }
+//        // self
+//     }
+// }
 
 impl IntoOutput for PF1<Input<PullUp>> {
     type Output = PF1<Output<PushPull>>;

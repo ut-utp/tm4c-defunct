@@ -9,7 +9,7 @@ use embedded_hal::digital::v2::{InputPin, OutputPin};
 
 //Generic imports
 use crate::peripherals_generic::gpio as gpio_generic;
-use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts, set_bit};
+use crate::peripherals_generic::gpio::{IntoOutput, IntoInput, Interrupts};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum State {
@@ -308,6 +308,110 @@ where
 
         if let State::Output(_) = self[pin] {
             self[pin] = State::Output(bit);
+
+       use crate::peripherals_generic::gpio::PhysGpioPin;
+        let x = usize::from(pin);
+
+        match x{
+            0 => {
+                        let opt_handle = unsafe{
+                                core::mem::replace(
+                                    &mut self.pin_block,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+                        match opt_handle{
+                        Some(mut handle) => {
+
+                            let mut handle2 = unsafe {
+                                core::mem::replace(
+                                    &mut handle.g0,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+
+
+                        match handle2{
+                            PhysGpioPin::Output(mut pin) =>{
+                            if(bit)
+                            {
+                                pin.set_high();
+                            }
+                            else {
+                                pin.set_low();
+                            }
+                            core::mem::replace(
+                            &mut handle.g0,
+                            PhysGpioPin::Output(pin),
+                            );
+
+                            },
+                            _=>{},
+
+
+
+                        };
+
+                       // handle2.g0 = pin_handle;
+
+
+                        core::mem::replace(
+                            &mut self.pin_block,
+                            Some(handle),
+                        );
+                        self[pin] = State::Output(bit);
+                        },
+                        None =>{},
+
+
+                    }
+
+                    
+
+               
+
+
+                
+
+
+            },
+
+            1=>{
+
+            },
+
+            2 =>{
+
+            },
+            3 => {
+
+            },
+            4 => {
+
+            },
+            4 => {
+
+            },
+            5 => {
+
+            },
+            6 => {
+
+            },
+            7 => {
+
+            },
+            _=>{
+
+            },
+
+        }
+
+
+
+
+
+
             Ok(())
         } else {
             Err(GpioWriteError((pin, self[pin].into())))

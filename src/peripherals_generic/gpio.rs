@@ -25,11 +25,11 @@ pub trait Interrupts: InputPin {
     fn disable_interrupts(&mut self);
 }
 
-pub trait set_bit: embedded_hal::digital::v2::OutputPin + Sized{
-   // type Output: OutputPin + IntoInput<Input = Self>;
+// pub trait set_bit: OutputPin + Sized{
+//    // type Output: OutputPin + IntoInput<Input = Self>;
 
-    fn change_bit(&mut self, val: bool);
-}
+//     fn change_bit(&mut self, val: bool);
+// }
 
 // let a = gpioe0.into_pull_up_input();
 
