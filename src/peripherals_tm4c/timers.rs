@@ -16,16 +16,20 @@ use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x_hal::time::MegaHertz;
 use tm4c123x_hal::sysctl::Clocks;
 use tm4c123x::NVIC as nvic;
+extern crate cortex_m;
+use cortex_m::interrupt as cortex_int;
 //use time;
 //use timer;
+
+static mut COUNT: u32 = 0;
  enum PhysicalTimers{
     T0(Timer<TIMER0>),
     T1(Timer<TIMER1>)
  }
 
  pub struct required_components{
-    timer0: tm4c123x::TIMER0,
-    timer1: tm4c123x::TIMER1,
+    pub timer0: tm4c123x::TIMER0,
+    pub timer1: tm4c123x::TIMER1,
  }
 
  // pub system_clock: tm4c123x_hal::sysctl::Sysctl = {
@@ -100,7 +104,7 @@ use tm4c123x::NVIC as nvic;
 
  impl TimersShim<'_> {
 
-     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components, nvic_field: tm4c123x::NVIC) -> Self {
+     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components, mut nvic_field: tm4c123x::NVIC) -> Self {
 
              let t1 = peripheral_set.timer0;
              let t2 = peripheral_set.timer1;
@@ -141,7 +145,9 @@ use tm4c123x::NVIC as nvic;
         //     _marker: core::marker::PhantomData,
         // };
         unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER0A);};
-       // nvic_field::NVIC.set_priority(tm4c123x::Interrupt::TIMER0A, 4);
+       unsafe{nvic_field.set_priority(tm4c123x::Interrupt::TIMER0A, 1);};
+       unsafe{nvic_field.enable(tm4c123x::Interrupt::TIMER0A);};
+
        // unsafe{nvic::set_priority(tm4c123x::Interrupt::TIMER0A, 4);};
 
         t2.ctl.write(|w| unsafe{w.bits(0)});
@@ -154,9 +160,16 @@ use tm4c123x::NVIC as nvic;
         t2.ctl.write(|w| unsafe{w.bits(1)});
        // let peri = tm4c123x::CorePeripherals::take().unwrap();
        // let mut nvic_field = peri.NVIC;
+       // let t2 = unsafe { &*tm4c123x::TIMER2::ptr() };
+        // loop{
+        //     
+        //     let x=5;
+        // }
         let mut nvic_f = nvic_field;
-        unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER1A);};
-        unsafe{nvic_f.set_priority(tm4c123x::Interrupt::TIMER1A, 4);};
+       // unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER1A);};
+       // unsafe{nvic_f.set_priority(tm4c123x::Interrupt::TIMER1A, 4);};
+        unsafe{cortex_int::enable();};
+
          Self {
              states: TimerArr([TimerState::Disabled; TimerId::NUM_TIMERS]),
              times: TimerArr([0u16; TimerId::NUM_TIMERS]), // unlike gpio, interrupts occur on time - not on bit change
@@ -456,14 +469,24 @@ use tm4c123x::Interrupt as interrupt;
 
 #[interrupt]
 fn TIMER0A(){
-    static mut COUNT: u32 = 0;
+    unsafe{//let p = Peripherals::steal();
+    let mut sc = &*tm4c123x::TIMER0::ptr();
+    sc.icr.write(|w| unsafe{w.bits(1)});
+    // let mut portf = p.GPIO_PORTF.split(&p.SYSCTL.constrain().power_control);
+    // let mut blue_led = portf.pf1.into_push_pull_output();
+    // blue_led.set_high();
+    //let button = portb.pb3.into_pull_up_input();    
+};
 
     // `COUNT` has type `&mut u32` and it's safe to use
-    *COUNT += 1;
+    unsafe{COUNT += 1};
 
 }
 
+
+
 #[interrupt]
 fn TIMER1A(){
+    let x=5;
 
 }
