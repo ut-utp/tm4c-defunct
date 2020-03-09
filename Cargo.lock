@@ -286,7 +286,7 @@ dependencies = [
 [[package]]
 name = "tm4c-hal"
 version = "0.3.0"
-source = "git+https://github.com/thejpster/tm4c-hal#951e4613c287ab447af924ab33c198b547001b59"
+source = "git+https://github.com/ut-utp/tm4c-hal#aa76ad3ebdb8d8da02bde6b745999d3b32489c44"
 dependencies = [
  "cast",
  "cortex-m",
@@ -309,7 +309,7 @@ dependencies = [
 [[package]]
 name = "tm4c123x-hal"
 version = "0.10.0"
-source = "git+https://github.com/thejpster/tm4c-hal#951e4613c287ab447af924ab33c198b547001b59"
+source = "git+https://github.com/ut-utp/tm4c-hal#aa76ad3ebdb8d8da02bde6b745999d3b32489c44"
 dependencies = [
  "cast",
  "cortex-m",

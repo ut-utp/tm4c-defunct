@@ -4,6 +4,8 @@ use lc3_traits::peripherals::pwm::{
 };
 
 extern crate tm4c123x;
+
+use hal::Pwm;
 use core::sync::atomic::{AtomicBool, Ordering};
 use tm4c123x_hal::gpio;
 use tm4c123x_hal::gpio::*;
@@ -87,7 +89,7 @@ impl PwmShim {
         p.rcgcpwm
             .write(|w| unsafe { w.bits(p.rcgcpwm.read().bits() | 3) }); //activate pwm0
         let pb6 = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
-        let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
+        let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb7
         let pwm_divider = p
             .rcc
             .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
@@ -133,44 +135,44 @@ impl Pwm for PwmShim {
         let x = usize::from(pin);
         match x {
             0 => {
-                match state {
-                    Enabled(_) => {
-                        //let p = unsafe { &*tm4c123x::PWM0::ptr() };
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.pwm_physical_pins[0],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
+                // match state {
+                //     Enabled(_) => {
+                //         //let p = unsafe { &*tm4c123x::PWM0::ptr() };
+                //         let mut handle = {
+                //             unsafe {
+                //                 core::mem::replace(
+                //                     &mut self.pwm_physical_pins[0],
+                //                     core::mem::uninitialized(),
+                //                 )
+                //             }
+                //         };
 
-                        match handle {
-                            PhysicalPins::p0(pin_out) =>{
-                                 self.pwm0._0_load.write(|w| unsafe { w.bits(40000) });
-                                 self.pwm0._0_cmpa.write(|w| unsafe { w.bits(4000) });
-                                 self.pwm0._0_ctl
-                                    .write(|w| unsafe { w.bits(p._0_ctl.read().bits() | 1) });
-                                 self.pwm0.enable
-                                    .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) }); 
+                //         match handle {
+                //             PhysicalPins::p0(pin_out) =>{
+                //                  self.pwm0._0_load.write(|w| unsafe { w.bits(40000) });
+                //                  self.pwm0._0_cmpa.write(|w| unsafe { w.bits(4000) });
+                //                  self.pwm0._0_ctl
+                //                     .write(|w| unsafe { w.bits(p._0_ctl.read().bits() | 1) });
+                //                  self.pwm0.enable
+                //                     .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) }); 
 
-                                     core::mem::replace(
-                                        &mut self.pwm_physical_pins[0],
-                                        PhysicalPins::p0(pin_out));                              
-                            },
+                //                      core::mem::replace(
+                //                         &mut self.pwm_physical_pins[0],
+                //                         PhysicalPins::p0(pin_out));                              
+                //             },
 
-                            _ =>{},
+                //             _ =>{},
 
 
-                        }
+                //         }
 
-                    }
-                    Disabled => {
-                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
-                        p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
-                    }
-                }
+                //     }
+                //     Disabled => {
+                //         let p = unsafe { &*tm4c123x::PWM0::ptr() };
+                //         p.enable
+                //             .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
+                //     }
+                // }
             }
 
             1 => {

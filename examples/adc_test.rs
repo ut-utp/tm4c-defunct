@@ -14,7 +14,6 @@ use lc3_traits::peripherals::adc::{
 
 use lc3_tm4c::peripherals_tm4c::adc;
 use lc3_tm4c::peripherals_tm4c::adc::required_components;
-
 #[entry]
 fn main() -> ! {
  	    let p = hal::Peripherals::take().unwrap();
