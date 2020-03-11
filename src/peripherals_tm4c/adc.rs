@@ -5,7 +5,7 @@ use lc3_traits::peripherals::adc::{
 extern crate tm4c123x;
 use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x::adc0;
-
+use tm4c123x_hal::sysctl;
 
   // ADC0_PC_R &= ~0xF;              // 7) clear max sample rate field
   // ADC0_PC_R |= 0x1;               //    configure for 125K samples/sec
@@ -73,15 +73,22 @@ impl AdcShim {
         porte_ams.amsel.write(|w| unsafe{w.bits((porte_ams.amsel.read().bits() | 0x003F ))});
         
         let p = unsafe { &*tm4c123x::SYSCTL::ptr() };
-        p.rcgcadc.write(|w| unsafe{w.bits(p.rcgcadc.read().bits() | 1)});  //activate adc0
-        ad0.pc.write(|w| unsafe{w.bits((ad0.pc.read().bits() & !0x0F) )});
-        ad0.pc.write(|w| unsafe{w.bits((ad0.pc.read().bits() | 0x01) )});
+        // p.rcgcadc.write(|w| unsafe{w.bits(p.rcgcadc.read().bits() | 1)});  //activate adc0
+        // for pat in 0..100 {
+            
+        // }
+        sysctl::control_power(
+            power, sysctl::Domain::Adc0,
+            sysctl::RunMode::Run, sysctl::PowerState::On);
+        sysctl::reset(power, sysctl::Domain::Adc0);
         ad0.sspri.write(|w| unsafe{w.bits(0x0123)});
         ad0.actss.write(|w| unsafe{w.bits((ad0.actss.read().bits() & !0x0008) )});
         ad0.emux.write(|w| unsafe{w.bits((ad0.emux.read().bits() & !0xF000) )});
         ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
         ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 9 ))});
         ad0.ssctl3.write(|w| unsafe{w.bits(0x06)});
+       // ad0.pc.write(|w| unsafe{w.bits((ad0.pc.read().bits() & !0x0F) )});
+       // ad0.pc.write(|w| unsafe{w.bits((ad0.pc.read().bits() | 0x01) )});
        // ad0.ssctl3.write(|w| unsafe{w.bits(0x06)});
       //  ad0.sspri.write(|w| unsafe{w.bits(0x0123)});
         ad0.im.write(|w| unsafe{w.bits((ad0.im.read().bits() & !0x0008 ))});
