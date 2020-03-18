@@ -1,8 +1,4 @@
 extern crate embedded_hal;
-
-use embedded_hal::adc::Channel;
-extern crate tm4c123x;
-extern crate tm4c123x_hal;
 use lc3_traits::peripherals::adc::{
     Adc, AdcMiscError, AdcPin as Pin, AdcPinArr as PinArr, AdcReadError as ReadError, AdcState,
     AdcStateMismatch as StateMismatch,
@@ -10,35 +6,44 @@ use lc3_traits::peripherals::adc::{
 
 use embedded_hal::adc::{Channel, OneShot};
 
-pub struct tm4c_impl{
+pub struct generic_adc_res(u32);
+// pub struct AdcShim {
+//    // states: PinArr<State>,
+//     //components: Option<required_components>,
+// }
 
+
+impl From<u32> for generic_adc_res{
+  fn from(x: u32)->Self{
+    generic_adc_res(x)
+  }
 }
-pub struct AdcShim {
-    states: PinArr<State>,
-    //components: Option<required_components>,
+
+impl Into<u32> for generic_adc_res{
+  fn into(self)->u32{
+    let generic_adc_res(res) = self;
+    res
+  }
 }
 
 pub struct adc_input;
 
 
 
-struct MyAdc<ONESHOT>{
+pub struct MyAdc <ONESHOT, U, T: Channel<ONESHOT, ID=u8>>{//<ONESHOT: OneShot<ONESHOT, T, R: Channel<ONESHOT, ID=u8>, Error= T>>{
   one_shot: ONESHOT,
+  _channel: Option<T>,  // These 2 are useless unused fields put just
+  _ch:    Option<U>     // to satisfy unconstrained trait bounds
 
-} // 10-bit ADC, with 5 channels
-
-impl <T> From<Channel<T>> for MyAdc<ONESHOT>
-where T: 
-{
+} 
 
 
-}
+impl <ONESHOT, U, T> MyAdc<ONESHOT, U, T> 
+where ONESHOT: OneShot<ONESHOT, U, T>,  
+      U      : Into<u32>+From<u32>,
+      T      : Channel<ONESHOT, ID=u8> + From<u32>,
 
 
-impl <T> Adc for MyAdc<ONESHOT> 
-
-where ONESHOT: OneShot<Error=T>,
-where T      : From<u8>,
 {
     fn set_state(&mut self, pin: Pin, state: AdcState) -> Result<(), ()> {
       Ok(())
@@ -46,41 +51,84 @@ where T      : From<u8>,
     }
 
     fn get_state(&self, pin: Pin) -> AdcState {
-       // self.states[pin].into()
        AdcState::Enabled
     }
 
-  // ADC0_PSSI_R = 0x0008;            // 1) initiate SS3
-  // while((ADC0_RIS_R&0x08)==0){};   // 2) wait for conversion done
-  //   // if you have an A0-A3 revision number, you need to add an 8 usec wait here
-  // result = ADC0_SSFIFO3_R&0xFFF;   // 3) read result
-  // ADC0_ISC_R = 0x0008;             // 4) acknowledge completion
-  // return result;
+    pub fn read(&mut self, pin: Pin) -> Result<u8, ReadError> {
+      let res;
+      let mut ret: u8 = 8;
+      match pin{
+        Pin::A0 =>{
 
-    fn read(&self, pin: Pin) -> Result<u8, ReadError> {
-      // match pin{
-      //   PwmPin::P0 =>{
+          res = self.one_shot.read(&mut(0.into()));
+          match res{
+            Ok(out) =>{
+              ret = (out.into() as u8);
+            },
+            _=>{}
 
-      //   },
-      //   PwmPin::P1 =>{
+          }
+          //res = u32::from(res.unwrap());
+        },
+        Pin::A1 =>{
+          res = self.one_shot.read(&mut(1.into()));
+          match res{
+            Ok(out) =>{
+              ret = (out.into() as u8);
+            },
+            _=>{}
 
-      //   },
-      //   PwmPin::P1 =>{
+          }
+        },  
+        Pin::A2 =>{
+          res = self.one_shot.read(&mut(2.into()));
+          match res{
+            Ok(out) =>{
+              ret = (out.into() as u8);
+            },
+            _=>{}
 
-      //   },
-      //   PwmPin::P2 =>{
+          }
+        },  
+        Pin::A3 =>{
+          res = self.one_shot.read(&mut(3.into()));
+          match res{
+            Ok(out) =>{
+              ret = (out.into() as u8);
+            },
+            _=>{}
 
-      //   },
-      //   PwmPin::P3 =>{
+          }
+        },  
 
-      //   },
-      //    PwmPin::P0 =>{
 
-      //   },      
-      // }
-     // self.one_shot.read()
-     Ok((8 as u8))
+      }
 
+     Ok(ret)
+
+    }
+}
+
+impl <ONESHOT, U, T> MyAdc<ONESHOT, U, T> 
+where ONESHOT: OneShot<ONESHOT, U, T>,  
+      T      : Channel<ONESHOT, ID=u8>,
+{
+    fn default() -> Self {
+      unimplemented!()
+    }
+}
+
+
+impl <ONESHOT, U, T> MyAdc<ONESHOT, U, T> 
+where ONESHOT: OneShot<ONESHOT, U, T>,  
+      T      : Channel<ONESHOT, ID=u8>,
+{
+    pub fn new(adc: ONESHOT) -> Self {
+      MyAdc{
+        one_shot: adc,
+        _channel: None,
+        _ch: None
+      }
     }
 }
 

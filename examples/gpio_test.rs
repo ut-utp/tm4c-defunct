@@ -36,13 +36,19 @@ fn main() -> ! {
     //let mut pins = gpio::physical_pins::default();
     // pins.set_pin(GpioPin::G4, false);
     // pins.set_pin(GpioPin::G5, true);
-    pins.set_pin(GpioPin::G2, true);
+   pins.set_state(GpioPin::G0, GpioState::Output);
+   pins.set_state(GpioPin::G1, GpioState::Output);
+   pins.set_state(GpioPin::G2, GpioState::Output);
+   pins.set_state(GpioPin::G3, GpioState::Output);
+    pins.set_pin(GpioPin::G0, true);
     //pins.set_pin(GpioPin::G3, true);
-    pins.set_pin(GpioPin::G0, true);
-    pins.set_pin(GpioPin::G2, false);
-    pins.set_state(GpioPin::G0, GpioState::Input);
-    pins.set_state(GpioPin::G0, GpioState::Output);
-    pins.set_pin(GpioPin::G0, true);
+    pins.set_pin(GpioPin::G1, true);
+    pins.set_pin(GpioPin::G2, true);
+    pins.set_pin(GpioPin::G3, true);
+    //pins.set_pin(GpioPin::G2, false);
+   // pins.set_state(GpioPin::G0, GpioState::Input);
+   // pins.set_state(GpioPin::G0, GpioState::Output);
+   // pins.set_pin(GpioPin::G0, true);
 
     //let mut porta = p.GPIO_PORTA.split(&sc.power_control);
 

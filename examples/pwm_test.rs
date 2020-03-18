@@ -52,10 +52,10 @@ fn main() -> ! {
             porte: porte,
         },
     );
-   pins.set_state(GpioPin::G0, GpioState::Output);
-   pins.set_state(GpioPin::G1, GpioState::Output);
-   pins.set_state(GpioPin::G2, GpioState::Output);
-   pins.set_state(GpioPin::G3, GpioState::Output);
+   // pins.set_state(GpioPin::G0, GpioState::Output);
+   // pins.set_state(GpioPin::G1, GpioState::Output);
+   // pins.set_state(GpioPin::G2, GpioState::Output);
+   // pins.set_state(GpioPin::G3, GpioState::Output);
 
    pins.set_pin(GpioPin::G0, true);
    pins.set_pin(GpioPin::G1, true);
