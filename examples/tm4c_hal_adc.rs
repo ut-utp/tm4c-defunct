@@ -6,7 +6,7 @@ extern crate tm4c123x_hal as hal;
 use core::fmt::Write;
 use cortex_m_rt::entry;
 use hal::prelude::*;
-use lc3_tm4c::peripherals_tm4c::adc_tm4c_hal_temp as ad;
+use hal::adc as ad;
 use lc3_traits::peripherals::adc::{
     Adc, AdcMiscError, AdcPin as Pin, AdcPinArr as PinArr, AdcReadError as ReadError, AdcState,
     AdcStateMismatch as StateMismatch,
