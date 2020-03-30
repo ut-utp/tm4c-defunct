@@ -122,6 +122,7 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 
 	    	//let p_sec =self.tm4c_flash_unit.Flash_EraseSector(ROOT_METADATA_SECTOR*(SECTOR_SIZE));
 			//metadata[0] = 
+			//let mut free_sector_table: [usize; 128] = <[usize; 128]>::from(metadata);
 
 			for i in 0..64 {
 				//metadata[i] = 0;
@@ -139,12 +140,159 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 }
 
     fn read_swap(&mut self, addr: Addr) -> Result<Word, SwapError>{
-    	Ok((4))
+/*    	let root_sec: [u32; 128] = [0; 128];
+    	for i in 0..128 {
+    		let res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as usize + 4*i as usize, 1).unwrap();
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				root_sec[i] = inp as u32;
+    			}
+    			_=>{
+
+    			}
+    		}
+    	}*/
+
+    	let mut swap_start_sector = 0;
+    	let mut num_swap_entries = 0;
+        let mut res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as u32 + 8 as u32, 1);
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				swap_start_sector = inp as u32;
+    			}
+    			_=>{
+
+    			}
+    		}
+
+    	    res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as u32 + 12 as u32, 1);
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				num_swap_entries = inp as u32;
+    			}
+    			_=>{
+
+    			}
+    		}
+    		let mut flag =0;
+    		let mut word_at_addr: Word = 0;
+    		for i in 0..num_swap_entries {
+    	    res = self.tm4c_flash_unit.Flash_ReadData(swap_start_sector*SECTOR_SIZE + (i*4) as u32, 1);
+    	    
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				let sector = inp as u32;
+    				if(swap_sector_contains_address(addr)){
+    					let mut offset = addr%32;
+    					offset -= offset&1;
+    					offset  = offset/2;
+    					let mut word = self.tm4c_flash_unit.Flash_ReadData(swap_start_sector*SECTOR_SIZE + (i*4) + offset as u32, 1);
+    					match word{
+			    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+		    					if(addr&1 == 1){
+		    						word_at_addr = inp as Word;
+		    					}
+		    					else {
+		    						word_at_addr = (inp >> 16) as Word;
+		    					}
+		    					flag = 1;
+			    			}
+			    			_=>{
+
+			    			}    						
+    					}
+
+    				}
+    			}
+    			_=>{
+
+    			}
+    		}
+
+    	}
+    	    if(flag == 0){
+    			Err(SwapError::AddressOutOfRange)
+    		}
+    		else{
+    			Ok((word_at_addr))
+    		}
+
+
+     	
     	//let result = self.tm4c_flash_unit.flash_ctrl.Flash_ReadData();
     }
-    fn write_swap(&mut self, addr: Addr, data: Word) -> Result<Word, SwapError>{Ok(4)}
-    fn read_primary(&mut self, addr: Addr) -> Result<(), SwapError>{Ok(())}
-    fn write_primary(&mut self, data: Word) -> Result<(), SwapError>{Ok(())}
+    fn write_swap(&mut self, addr: Addr, data: Word) -> Result<(), SwapError>{
+
+    	let mut swap_start_sector = 0;
+    	let mut num_swap_entries = 0;
+        let mut res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as u32 + 8 as u32, 1);
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				swap_start_sector = inp as u32;
+    			}
+    			_=>{
+
+    			}
+    		}
+
+    	    res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as u32 + 12 as u32, 1);
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				num_swap_entries = inp as u32;
+    			}
+    			_=>{
+
+    			}
+    		}
+    		let mut flag =0;
+    		let mut word_at_addr: Word = 0;
+    		for i in 0..num_swap_entries {
+    	    res = self.tm4c_flash_unit.Flash_ReadData(swap_start_sector*SECTOR_SIZE + (i*4) as u32, 1);
+    	    
+    		match(res){
+    			status_error_codes::ARM_DRIVER_OK_READ(inp) =>{
+    				let sector = inp as u32;
+    				if(swap_sector_contains_address(addr)){
+    					let mut offset = addr%32;
+    					offset -= offset&1;
+    					offset  = offset/2;
+    					let mut word = self.tm4c_flash_unit.Flash_ReadData(swap_start_sector*SECTOR_SIZE + (i*4) + offset as u32, 1);
+    					match word{
+			    			status_error_codes::ARM_DRIVER_OK_READ(mut inp) =>{
+		    					if(addr&1 == 1){
+		    						inp = (inp&0xFFFF0000)+data as u32;
+		    					}
+		    					else {
+		    						inp = (inp&0x0000FFFF)+(((data as u32)<<16)&0xFFFF0000);
+		    					}
+		    					self.tm4c_flash_unit.Flash_WriteWord(swap_start_sector*SECTOR_SIZE + (i*4) + offset as u32, inp);
+		    					flag = 1;
+			    			}
+			    			_=>{
+
+			    			}    						
+    					}
+
+    				}
+    			}
+    			_=>{
+
+    			}
+    		}
+
+    	}
+    	    if(flag == 0){
+    			Err(SwapError::AddressOutOfRange)
+    		}
+    		else{
+    			Ok(())
+    		}
+
+
+
+    }
+    fn read_primary(&mut self, addr: Addr) -> Result<Word, SwapError>{Ok((4))}
+    fn write_primary(&mut self, addr: Addr, data: Word) -> Result<(), SwapError>{Ok(())}
     fn commit_changes(&mut self, addr: Addr)-> Result<(), SwapError>{
     	Ok(())
     }
@@ -157,4 +305,8 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 // }
 fn get_bit_at(input: u32, n: u8) -> bool {
         input & (1 << n) != 0
+}
+
+fn swap_sector_contains_address(input: Word) -> bool {
+        true
 }
