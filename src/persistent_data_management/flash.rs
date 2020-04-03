@@ -18,7 +18,7 @@ pub trait Flash {
 
 	fn Flash_Initialize(&mut self) -> status_error_codes;
 	fn Flash_Uninitialize(&mut self) -> status_error_codes;
-	fn Flash_ReadData(&mut self, addr: u32, num_items: u8) -> status_error_codes;
+	fn Flash_ReadData(&self, addr: u32, num_items: u8) -> status_error_codes;
   	fn Flash_WriteWord(&mut self, addr: u32, data: u32)-> status_error_codes;
 	fn Flash_ProgramData(&mut self, addr: u32, data: [usize; MAX_WRITABLE_WORDS])-> status_error_codes;
 	fn Flash_EraseSector(&mut self, addr: u32) -> status_error_codes;

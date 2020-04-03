@@ -57,7 +57,7 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 	Ok(())
 }
 
-    fn read_swap(&mut self, addr: Addr) -> Result<Word, SwapError>{
+    fn read_swap(&self, addr: Addr) -> Result<Word, SwapError>{
 /*    	let root_sec: [u32; 128] = [0; 128];
     	for i in 0..128 {
     		let res = self.tm4c_flash_unit.Flash_ReadData((ROOT_METADATA_SECTOR*SECTOR_SIZE) as usize + 4*i as usize, 1).unwrap();

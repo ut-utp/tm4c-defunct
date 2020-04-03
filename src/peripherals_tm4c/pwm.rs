@@ -14,6 +14,7 @@ use tm4c123x_hal::sysctl::Clocks;
 use tm4c123x_hal::time::MegaHertz;
 use tm4c123x_hal::{prelude::*, Peripherals};
 use tm4c123x_hal::sysctl;
+//use core::num::NonZeroU8;
 //use core::ops::{Index, IndexMut};
 
 static PWM_SHIM_PINS: PwmPinArr<AtomicBool> =
@@ -150,10 +151,11 @@ impl Pwm for PwmShim {
         match x {
             0 => {
                  match state {
-                Enabled(_) =>{
+                Enabled(dut) =>{
+                        //let NonZeroU8(extract)=dut;
                         let p = unsafe { &*tm4c123x::PWM0::ptr() };
                         p._0_load.write(|w| unsafe{w.bits(255)});
-                        p._0_cmpa.write(|w| unsafe{w.bits(225)});
+                        p._0_cmpa.write(|w| unsafe{w.bits(dut.get().into())});
                         p._0_ctl.write(|w| unsafe{w.bits(p._0_ctl.read().bits() | 1)});
                         p.enable
                             .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
@@ -210,23 +212,24 @@ impl Pwm for PwmShim {
 
             1 => {
                 match state {
-                    Enabled(_) => {
+                    Enabled(dut) => {
                         // let p = Peripherals::take().unwrap().PWM1;
-                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
-                        p._0_load.write(|w| unsafe{w.bits(255)});
-                        p._0_cmpa.write(|w| unsafe{w.bits(225)});
-                        p._0_ctl.write(|w| unsafe{w.bits(p._1_ctl.read().bits() | 2)});
+                        //let NonZeroU8(extract)=dut;
+                        let p = unsafe { &*tm4c123x::PWM1::ptr() };
+                        p._1_load.write(|w| unsafe{w.bits(255)});
+                        p._1_cmpa.write(|w| unsafe{w.bits(dut.get().into())});
+                        p._1_ctl.write(|w| unsafe{w.bits(p._1_ctl.read().bits() | 1)});
                         p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 2) });
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
                    
 
 
                     }
                     Disabled => {
-                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
+                        let p = unsafe { &*tm4c123x::PWM1::ptr() };
                         //let p = Peripherals::take().unwrap().PWM1;
                         p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() & !2) });
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
                     }
                 }
             }

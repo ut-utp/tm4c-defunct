@@ -86,7 +86,7 @@ impl Flash for tm4c_flash_unit{
 		status_error_codes::ARM_DRIVER_ERROR_SPECIFIC
 
 	}
-	fn Flash_ReadData(&mut self, addr: u32, num_items: u8) -> status_error_codes{
+	fn Flash_ReadData(&self, addr: u32, num_items: u8) -> status_error_codes{
     let addr_ptr: *const u32 = addr as (*const u32);
     let mut result=0;
     unsafe{result = read_volatile(addr_ptr);}

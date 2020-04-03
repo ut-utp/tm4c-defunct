@@ -104,11 +104,21 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git#2d8ffe333a2d272ab83ef16876d3f8f02c7b44a9"
+source = "git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests#5a7d132ccbf8f487e476929260bc128c335ede58"
 dependencies = [
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "static_assertions 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "lc3-isa"
+version = "0.1.0"
+source = "git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests#5a7d132ccbf8f487e476929260bc128c335ede58"
+dependencies = [
+ "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "serde 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
  "static_assertions 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -120,6 +130,16 @@ dependencies = [
  "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
  "serde 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
  "static_assertions 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "lc3-macros"
+version = "0.1.0"
+source = "git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests#5a7d132ccbf8f487e476929260bc128c335ede58"
+dependencies = [
+ "proc-macro2 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -141,13 +161,25 @@ dependencies = [
  "cortex-m-rt-macros 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "cortex-m-semihosting 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "embedded-hal 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "lc3-baseline-sim 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-baseline-sim 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
  "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
  "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
  "nb 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "panic-halt 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tm4c123x 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tm4c123x-hal 0.10.0 (git+https://github.com/ut-utp/tm4c-hal?rev=f4f7487202c7b777c6d2092cd6504f8d4c638ede)",
+]
+
+[[package]]
+name = "lc3-traits"
+version = "0.1.0"
+source = "git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests#5a7d132ccbf8f487e476929260bc128c335ede58"
+dependencies = [
+ "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
+ "static_assertions 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -337,10 +369,13 @@ dependencies = [
 "checksum embedded-hal 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ee4908a155094da7723c2d60d617b820061e3b4efcc3d9e293d206a5a76c170b"
 "checksum generic-array 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c68f0274ae0e023facc3c97b2e00f076be70e254bc851d972503b328db79b2ec"
 "checksum generic-array 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0ed1e761351b56f54eb9dcd0cfaca9fd0daecf93918e1cfc01c8a3d26ee7adcd"
-"checksum lc3-baseline-sim 0.1.0 (git+https://github.com/ut-utp/prototype.git)" = "<none>"
+"checksum lc3-baseline-sim 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)" = "<none>"
 "checksum lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)" = "<none>"
+"checksum lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)" = "<none>"
 "checksum lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)" = "<none>"
+"checksum lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)" = "<none>"
 "checksum lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git)" = "<none>"
+"checksum lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=feat-trap-tests)" = "<none>"
 "checksum log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
 "checksum nb 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "b1411551beb3c11dedfb0a90a0fa256b47d28b9ec2cdff34c25a2fa59e45dbdc"
 "checksum panic-halt 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de96540e0ebde571dc55c73d60ef407c653844e6f9a1e2fdbd40c07b9252d812"

@@ -184,7 +184,7 @@ impl Adc for AdcShim {
                 while((p.ris.read().bits()&0x08)==0){};
                 let out = p.ssfifo3.read().bits()& 0x0FFF;
                 p.isc.write(|w| unsafe{w.bits(0x00008)});
-                Ok((out >> 4) as u8)
+                Ok((out/16) as u8)
 
             },
             valueless => Err(ReadError((pin, valueless.into()))),
