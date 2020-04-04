@@ -23,7 +23,7 @@ pub trait Paging{
     fn initialize(&mut self) -> Result<(), SwapError>;
     fn read_swap(&self, addr: Self::device_addr) -> Result<Self::device_word, SwapError>;
     fn write_swap(&mut self, addr: Self::device_addr, data: Self::device_word) -> Result<(), SwapError>;
-    fn read_primary(&mut self, addr: Self::device_addr) -> Result<(Word), SwapError>;
+    fn read_primary(&self, addr: Self::device_addr) -> Result<(Word), SwapError>;
     fn write_primary(&mut self, addr: Self::device_addr, data: Self::device_word) -> Result<(), SwapError>;
     fn commit_changes(&mut self, addr: Self::device_addr)-> Result<(), SwapError>;
 }

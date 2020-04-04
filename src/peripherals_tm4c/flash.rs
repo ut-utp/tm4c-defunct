@@ -3,6 +3,7 @@ extern crate tm4c123x;
 use crate::persistent_data_management::flash::{Flash, status_error_codes};
 use core::ptr::read_volatile;
 
+
 // struct ARM_FLASH_INFO
 // ARM_FLASH_SECTOR *	sector_info	Sector layout information (NULL=Uniform sectors)
 // uint32_t	sector_count	Number of sectors.
@@ -94,16 +95,60 @@ impl Flash for tm4c_flash_unit{
 
 	}
 
+
+    fn Flash_ReadSector(&self, addr: u32) -> Option<[u32; MAX_READABLE_WORDS]>{
+    let addr_ptr: *const u32 = addr as (*const u32);
+
+    if(addr%512==0){
+    let mut result: [u32; MAX_READABLE_WORDS]=[0; MAX_READABLE_WORDS];
+    for i in 0..MAX_READABLE_WORDS {
+      unsafe{let resultd = self.Flash_ReadData(addr+4*i as u32, 1);
+              match resultd{
+                status_error_codes::ARM_DRIVER_OK_READ(out) =>{
+                  result[i] = out;
+                },
+                _=>{
+
+                },
+
+              }
+
+      }
+    }
+    
+    Some(result)
+  }
+  else{
+    None
+  }
+  }
+
   fn Flash_WriteWord(&mut self, addr: u32, data: u32)-> status_error_codes{
 
     let mut flashkey: u32 =0;
    if(WriteAddrValid(addr)){
+    let sec_data = self.Flash_ReadSector(addr - (addr%512));
+    let mut sec_data_res: [u32; 128] = [0; 128];
+    match  sec_data {
+      Some(expr) => {
+        sec_data_res = expr;
+      },
+      None => {},
+    }
+
+    sec_data_res[((addr%512u32)/4u32) as usize] = data;
+
     //let p = unsafe { &*tm4c123x::FLASH_CTRL::ptr() };
      while((self.flash_ctrl.fmc.read().bits()&(FLASH_FMC_WRITE|FLASH_FMC_ERASE|FLASH_FMC_MERASE)) > 0){
   //                //  TODO: return ERROR if this takes too long
      };
-     self.flash_ctrl.fmd.write(|w| unsafe{w.bits(data)});
-     self.flash_ctrl.fma.write(|w| unsafe{w.bits(addr)});
+
+
+     self.Flash_EraseSector(addr - (addr%512));
+
+     for i in 0..128 {
+     self.flash_ctrl.fmd.write(|w| unsafe{w.bits(sec_data_res[i])});
+     self.flash_ctrl.fma.write(|w| unsafe{w.bits(addr - (addr%512)+4*i as u32)});
      if((self.flash_ctrl.bootcfg.read().bits()&FLASH_BOOTCFG_KEY)>0){          // by default, the key is 0xA442
        flashkey = FLASH_FMC_WRKEY;
      } else{                                         // otherwise, the key is 0x71D5
@@ -115,6 +160,8 @@ impl Flash for tm4c_flash_unit{
      while((self.flash_ctrl.fmc.read().bits()&FLASH_FMC_WRITE) > 0){
   //                TODO: return ERROR if this takes too long
      };           // wait for completion (~3 to 4 usec)
+     }
+
 
      
      status_error_codes::ARM_DRIVER_OK_WRITE

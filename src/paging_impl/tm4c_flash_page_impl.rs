@@ -291,7 +291,7 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 
 
     }
-    fn read_primary(&mut self, addr: Addr) -> Result<Word, SwapError>{Ok((4))}
+    fn read_primary(&self, addr: Addr) -> Result<Word, SwapError>{Ok((4))}
     fn write_primary(&mut self, addr: Addr, data: Word) -> Result<(), SwapError>{Ok(())}
     fn commit_changes(&mut self, addr: Addr)-> Result<(), SwapError>{
     	Ok(())

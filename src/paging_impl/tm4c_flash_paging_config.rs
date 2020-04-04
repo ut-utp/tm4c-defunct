@@ -9,7 +9,7 @@ use lc3_isa::{
 };
 use crate::persistent_data_management::page::{Paging, SwapError};
 
-const PRIMARY_START_SECTOR: u32 = 2;   //This will be given a value once code is frozen
+const PRIMARY_START_SECTOR: u32 = 80;   //This will be given a value once code is frozen
 const PRIMARY_NUM_SECTORS:  u32 = 128;
 const SWAP_START_SECOTR:    u32 = 300;
 const SWAP_SIZE        :    u32 = 100;
@@ -36,10 +36,10 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
 
     fn get_total_free_sectors(&mut self)->u32{
 
-    	let b0: u32 = self.tm4c_flash_unit.flash_ctrl.fmpre0.read().bits();
-    	let b1: u32 = self.tm4c_flash_unit.flash_ctrl.fmpre1.read().bits();
-    	let b2: u32 = self.tm4c_flash_unit.flash_ctrl.fmpre2.read().bits();
-    	let b3: u32 = self.tm4c_flash_unit.flash_ctrl.fmpre3.read().bits();
+    	let b0: u32 = self.tm4c_flash_unit.flash_ctrl.fmppe0.read().bits();
+    	let b1: u32 = self.tm4c_flash_unit.flash_ctrl.fmppe1.read().bits();
+    	let b2: u32 = self.tm4c_flash_unit.flash_ctrl.fmppe2.read().bits();
+    	let b3: u32 = self.tm4c_flash_unit.flash_ctrl.fmppe3.read().bits();
 
     	let free_sectors_b0 = u32::count_ones(b0);
     	let free_sectors_b1 = u32::count_ones(b1);
@@ -154,7 +154,7 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
         }
 
     }
-    fn read_primary(&mut self, addr: Addr) -> Result<Word, SwapError>{
+    fn read_primary(&self, addr: Addr) -> Result<Word, SwapError>{
                 let mut flag = 300;
         let sector = lc3_addr_to_sec_map(addr);
         let mut word_at_addr: Word = 0;
@@ -162,7 +162,10 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
            // Err((SwapError::AddressOutOfRange))
         
         let physical_sector = PRIMARY_START_SECTOR+sector;
-        let physical_addr   = (physical_sector*512 as u32) + ((addr as u32)%512 as u32);
+        let mut physical_addr   = (physical_sector*512 as u32) + (((addr as u32)*2 as u32)%512 as u32);
+        if(physical_addr&0x01==0 && physical_addr%4!=0){
+            physical_addr -= 2;
+        }
         let mut word = self.tm4c_flash_unit.Flash_ReadData(physical_addr as u32, 1);
         
         match word{
@@ -195,7 +198,10 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
            // Err((SwapError::AddressOutOfRange))
         
         let physical_sector = PRIMARY_START_SECTOR+sector;
-        let physical_addr   = (physical_sector*512 as u32) + ((addr as u32)%512 as u32);
+        let mut physical_addr   = (physical_sector*512 as u32) + (((addr as u32)*2 as u32)%512 as u32);
+        if(physical_addr&0x01==0 && physical_addr%4!=0){
+            physical_addr -= 2;
+        }
         let mut word = self.tm4c_flash_unit.Flash_ReadData(physical_addr as u32, 1);
         
         match word{
@@ -226,11 +232,19 @@ impl Paging for Tm4c_flash_page_unit_for_lc3{
     }
 }
 
-// impl Default for Tm4c_flash_page_unit{
-// 	fn default() -> Self{
-// 		unimplemented!()
-// 	}
-// }
+
+
+impl Tm4c_flash_page_unit_for_lc3{
+	pub fn new(tm4c_flash_unit: flash::tm4c_flash_unit) -> Self{
+		Tm4c_flash_page_unit_for_lc3{
+            page_table:        [0; SWAP_SIZE as usize],
+            swap_start_Addr:   0,
+            swap_end_addr:     0,
+            num_swap_pages:    0,
+            tm4c_flash_unit:   tm4c_flash_unit,           
+        }
+	}
+}
 fn get_bit_at(input: u32, n: u8) -> bool {
         input & (1 << n) != 0
 }
@@ -240,6 +254,6 @@ fn swap_sector_contains_address(input: Word) -> bool {
 }
 
 fn lc3_addr_to_sec_map(input: Word) -> u32{
-    let offset = (input - input%512) as u32;
+    let offset = (((input as u32)*2) - ((input as u32)*2)%512) as u32;
     offset/512
 }

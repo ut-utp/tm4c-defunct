@@ -9,8 +9,8 @@ use crate::persistent_data_management::page::{Paging, SwapError};
 
 pub struct tm4c_lc3_memory{
 
-	tm4c_mem_obj: crate::paging_impl::tm4c_flash_paging_config::Tm4c_flash_page_unit_for_lc3,
-	word_idx: Word,
+	pub tm4c_mem_obj: crate::paging_impl::tm4c_flash_paging_config::Tm4c_flash_page_unit_for_lc3,
+	//word_idx: Word,
 }
 
 
@@ -65,7 +65,7 @@ impl Index<Addr> for tm4c_lc3_memory{
 
 impl memory::Memory for tm4c_lc3_memory{
     fn read_word(&self, addr: Addr) -> Word {
-		 let out = self.tm4c_mem_obj.read_swap(addr);
+		 let out = self.tm4c_mem_obj.read_primary(addr);
 		 let mut out_word: Word = 0xFFFF;
 		 match out{
 		 	Ok((word)) =>{
@@ -81,9 +81,10 @@ impl memory::Memory for tm4c_lc3_memory{
     }
 
     fn write_word(&mut self, addr: Addr, word: Word) {
-		 let out = self.tm4c_mem_obj.write_swap(addr, word);
+		 let out = self.tm4c_mem_obj.write_primary(addr, word);
 		 match out{
 		 	Ok(()) =>{
+		 		let res = 1;
 		 	},
 		 	Err(_) =>{   
 		 		// Again, should block if read fails so that host control
