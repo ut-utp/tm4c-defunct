@@ -18,7 +18,8 @@ extern crate cortex_m;
 use cortex_m::interrupt as cortex_int;
 
 
-
+static mut GPIO_INTERRPUT_B: i32 = 0;
+static mut GPIO_INTERRPUT_F: i32 = 0;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -31,8 +32,8 @@ pub enum State {
 }
 
 pub struct required_components {
-    pub porta: tm4c123x::GPIO_PORTF,
-    pub porte: tm4c123x::GPIO_PORTE,
+    pub portf: tm4c123x::GPIO_PORTF,
+    pub portb: tm4c123x::GPIO_PORTB,
 }
 
 impl From<State> for GpioState {
@@ -52,11 +53,11 @@ enum physical_pin_mappings {
     GPIO0(PF1<Output<PushPull>>),
     GPIO1(PF2<Output<PushPull>>),
     GPIO2(PF3<Output<PushPull>>),
-    GPIO3(PF4<Output<PushPull>>),
-    GPIO4(PE0<Input<PullUp>>),
-    GPIO5(PE1<Input<PullUp>>),
-    GPIO6(PE2<Input<PullUp>>),
-    GPIO7(PE3<Input<PullUp>>),
+    GPIO3(PB3<Output<PushPull>>),
+    GPIO4(PB4<Input<PullUp>>),
+    GPIO5(PB5<Input<PullUp>>),
+    GPIO6(PB6<Input<PullUp>>),
+    GPIO7(PB7<Input<PullUp>>),
 }
 
 pub struct mapping<T>(pub [T; GpioPin::NUM_PINS]);
@@ -76,11 +77,11 @@ pub enum PhysicalPins {
     g0(State2<PF1<Input<PullUp>>, PF1<Output<PushPull>>>),
     g1(State2<PF2<Input<PullUp>>, PF2<Output<PushPull>>>),
     g2(State2<PF3<Input<PullUp>>, PF3<Output<PushPull>>>),
-    g3(State2<PF4<Input<PullUp>>, PF4<Output<PushPull>>>),
-    g4(State2<PE0<Input<PullUp>>, PE0<Output<PushPull>>>),
-    g5(State2<PE1<Input<PullUp>>, PE1<Output<PushPull>>>),
-    g6(State2<PE2<Input<PullUp>>, PE2<Output<PushPull>>>),
-    g7(State2<PE3<Input<PullUp>>, PE3<Output<PushPull>>>),
+    g3(State2<PB3<Input<PullUp>>, PB3<Output<PushPull>>>),
+    g4(State2<PB4<Input<PullUp>>, PB4<Output<PushPull>>>),
+    g5(State2<PB5<Input<PullUp>>, PB5<Output<PushPull>>>),
+    g6(State2<PB6<Input<PullUp>>, PB6<Output<PushPull>>>),
+    g7(State2<PB7<Input<PullUp>>, PB7<Output<PushPull>>>),
 }
 
 pub struct physical_pins<'a> {
@@ -112,24 +113,26 @@ impl Default for physical_pins<'_> {
 
         let p_st = Peripherals::take().unwrap();
         let mut sc = p_st.SYSCTL.constrain();
-        let mut porta = p_st.GPIO_PORTF.split(&sc.power_control);
-        let mut gpioa0 = porta.pf1.into_push_pull_output();
-        gpioa0.set_low();
-        let mut gpioa1 = porta.pf2.into_push_pull_output();
-        gpioa1.set_high();
-        let mut gpioa2 = porta.pf3.into_push_pull_output();
-        gpioa2.set_low();
-        let mut gpioa3 = porta.pf4.into_push_pull_output();
-        gpioa3.set_low();
+        let mut portf = p_st.GPIO_PORTF.split(&sc.power_control);
+        let mut gpiof1 = portf.pf1.into_push_pull_output();
+        gpiof1.set_low();
+        let mut gpiof2 = portf.pf2.into_push_pull_output();
+        gpiof2.set_high();
+        let mut gpiof3 = portf.pf3.into_push_pull_output();
+        gpiof3.set_low();
+        // let mut gpioa3 = porta.pf4.into_push_pull_output();
+        // gpioa3.set_low();
 
-        let mut porte = p_st.GPIO_PORTE.split(&sc.power_control);
-        let mut gpioe0 = porte.pe0.into_pull_up_input();
+        let mut portb = p_st.GPIO_PORTB.split(&sc.power_control);
+        let mut gpiob3 = portb.pb3.into_push_pull_output();
         //   gpioe0.set_low();            //input - no init state
-        let mut gpioe1 = porte.pe1.into_pull_up_input();
+        let mut gpiob4 = portb.pb4.into_pull_up_input();
         //  gpioe1.set_low();
-        let mut gpioe2 = porte.pe2.into_pull_up_input();
+        let mut gpiob5 = portb.pb5.into_pull_up_input();
         //  gpioe2.set_low();
-        let mut gpioe3 = porte.pe3.into_pull_up_input();
+        let mut gpiob6 = portb.pb6.into_pull_up_input();
+
+        let mut gpiob7 = portb.pb7.into_pull_up_input();
 
         Self {
             states: GpioPinArr(states_init),
@@ -137,28 +140,28 @@ impl Default for physical_pins<'_> {
             //mapping: [],
             mapping2: ([
                 PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
-                    gpioa0,
+                    gpiof1,
                 )),
                 PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
-                    gpioa1,
+                    gpiof2,
                 )),
                 PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(
-                    gpioa2,
+                    gpiof3,
                 )),
-                PhysicalPins::g3(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
-                    gpioa3,
+                PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
+                    gpiob3,
                 )),
-                PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(
-                    gpioe0,
+                PhysicalPins::g4(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
+                    gpiob4,
                 )),
-                PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(
-                    gpioe1,
+                PhysicalPins::g5(State2::<PB5<Input<PullUp>>, PB5<Output<PushPull>>>::Input(
+                    gpiob5,
                 )),
-                PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(
-                    gpioe2,
+                PhysicalPins::g6(State2::<PB6<Input<PullUp>>, PB6<Output<PushPull>>>::Input(
+                    gpiob6,
                 )),
-                PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(
-                    gpioe3,
+                PhysicalPins::g7(State2::<PB7<Input<PullUp>>, PB7<Output<PushPull>>>::Input(
+                    gpiob7,
                 )),
             ]),
             Peripheral_set: None,
@@ -186,25 +189,26 @@ impl physical_pins<'_> {
 
         //let mut sc = sys_init();
         // let x = p_st.GPIO_PORTA;
-        let porta = (p_st.porta.split(power));
-        let mut gpioa0 = porta.pf1.into_push_pull_output();
-        (gpioa0).set_low();
-        let mut gpioa1 = porta.pf2.into_push_pull_output();
-        gpioa1.set_low();
-        let mut gpioa2 = (porta).pf3.into_push_pull_output();
-        (gpioa2).set_low();
-        let mut gpioa3 = (porta).pf4.into_push_pull_output();
-        (gpioa3).set_low();
-        // let a2 = porta;
+        let mut portf = p_st.portf.split(power);
+        let mut gpiof1 = portf.pf1.into_push_pull_output();
+        gpiof1.set_low();
+        let mut gpiof2 = portf.pf2.into_push_pull_output();
+        gpiof2.set_high();
+        let mut gpiof3 = portf.pf3.into_push_pull_output();
+        gpiof3.set_low();
+        // let mut gpioa3 = porta.pf4.into_push_pull_output();
+        // gpioa3.set_low();
 
-        let porte = (p_st.porte.split(power));
-        let gpioe0 = (porte).pe0.into_pull_up_input();
-        // // //   gpioe0.set_low();            //input - no init state
-        let gpioe1 = (porte).pe1.into_pull_up_input();
-        // //  //  gpioe1.set_low();
-        let gpioe2 = (porte).pe2.into_pull_up_input();
-        // //  //  gpioe2.set_low();
-        let gpioe3 = (porte).pe3.into_pull_up_input();
+        let mut portb = p_st.portb.split(power);
+        let mut gpiob3 = portb.pb3.into_push_pull_output();
+        //   gpioe0.set_low();            //input - no init state
+        let mut gpiob4 = portb.pb4.into_pull_up_input();
+        //  gpioe1.set_low();
+        let mut gpiob5 = portb.pb5.into_pull_up_input();
+        //  gpioe2.set_low();
+        let mut gpiob6 = portb.pb6.into_pull_up_input();
+
+        let mut gpiob7 = portb.pb7.into_pull_up_input();
         //let mut gpioe4 = porte.pe4;
         //let r1 = gpioe4.into_pull_up_input();
         //let r2 = r1.into_push_pull_output();
@@ -214,28 +218,28 @@ impl physical_pins<'_> {
             //mapping: [],
             mapping2: ([
                 PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
-                    gpioa0,
+                    gpiof1,
                 )),
                 PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
-                    gpioa1,
+                    gpiof2,
                 )),
                 PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(
-                    gpioa2,
+                    gpiof3,
                 )),
-                PhysicalPins::g3(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
-                    gpioa3,
+                PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
+                    gpiob3,
                 )),
-                PhysicalPins::g4(State2::<PE0<Input<PullUp>>, PE0<Output<PushPull>>>::Input(
-                    gpioe0,
+                PhysicalPins::g4(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
+                    gpiob4,
                 )),
-                PhysicalPins::g5(State2::<PE1<Input<PullUp>>, PE1<Output<PushPull>>>::Input(
-                    gpioe1,
+                PhysicalPins::g5(State2::<PB5<Input<PullUp>>, PB5<Output<PushPull>>>::Input(
+                    gpiob5,
                 )),
-                PhysicalPins::g6(State2::<PE2<Input<PullUp>>, PE2<Output<PushPull>>>::Input(
-                    gpioe2,
+                PhysicalPins::g6(State2::<PB6<Input<PullUp>>, PB6<Output<PushPull>>>::Input(
+                    gpiob6,
                 )),
-                PhysicalPins::g7(State2::<PE3<Input<PullUp>>, PE3<Output<PushPull>>>::Input(
-                    gpioe3,
+                PhysicalPins::g7(State2::<PB7<Input<PullUp>>, PB7<Output<PushPull>>>::Input(
+                    gpiob7,
                 )),
             ]),
             Peripheral_set: None,
@@ -289,7 +293,46 @@ impl physical_pins<'_> {
         use physical_pin_mappings::*;
         use PhysicalPins::*;
         use State::*;
-        
+         macro_rules! set_pin {
+            ($ pin : expr, $resp:path) => {
+                        let mut handle = {
+                            unsafe {
+                                core::mem::replace(
+                                    &mut self.mapping2[pin as usize],
+                                    core::mem::uninitialized(),
+                                )
+                            }
+                        };
+                        match handle {
+                            $resp(mut vb) => match vb {
+                                State2::Input(mut ins) => {
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Input(ins)),
+                                    );                                  
+                                }
+                                State2::Output(mut out) => {
+                                    {
+                                        if bit {
+                                            out.set_high();
+                                        } else {
+                                            out.set_low();
+                                        };
+                                    };
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Output(out)),
+                                    );
+                                }
+                                _ => {}
+                            },
+                            _ => {}
+                        }
+
+            };
+
+
+        }       
         match self[pin] {
             _ => {
                 self[pin] = Output(bit);
@@ -297,244 +340,28 @@ impl physical_pins<'_> {
                 match x {
 
                     0 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[0],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g0(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[0],
-                                        PhysicalPins::g0(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(0, g0);
                     }
                     1 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[1],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g1(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[1],
-                                        PhysicalPins::g1(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(1, g1);
                     }
                     2 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[2],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g2(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[2],
-                                        PhysicalPins::g2(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(2, g2);
                     }
                     3 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[3],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g3(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[3],
-                                        PhysicalPins::g3(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(3, g3);
                     }
                     4 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[4],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g4(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[4],
-                                        PhysicalPins::g4(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(4, g4);
                     }
                     5 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[5],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g5(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[5],
-                                        PhysicalPins::g5(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(5, g5);
                     }
                     6 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[6],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g6(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[6],
-                                        PhysicalPins::g6(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(6, g6);
                     }
                     7 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[7],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-                        match handle {
-                            g7(mut vb) => match vb {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    {
-                                        if bit {
-                                            out.set_high();
-                                        } else {
-                                            out.set_low();
-                                        };
-                                    };
-                                    core::mem::replace(
-                                        &mut self.mapping2[7],
-                                        PhysicalPins::g7(State2::Output(out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_pin!(7, g7);
                     }
                     _ => {}
                     //     // physical_pin_mappings::GPIO0(y) => {let mut res  = PF1<Output<>>{_mode: PhantomData};},
@@ -582,6 +409,61 @@ impl physical_pins<'_> {
 impl<'a> Gpio<'a> for physical_pins<'a> {
     fn set_state(&mut self, pin: GpioPin, state: GpioState) -> Result<(), GpioMiscError> {
         use GpioState::*;
+        macro_rules! set_state_input {
+            ($ pin : expr, $resp:path) => {
+                        let mut handle = {
+                            unsafe {
+                                core::mem::replace(
+                                    &mut self.mapping2[pin as usize],
+                                    core::mem::uninitialized(),
+                                )
+                            }
+                        };
+
+                          match handle {
+                             $resp(x) => {
+                                match x{
+                                State2::Input(mut ins) => {
+                                    let new_out = ins.into_pull_up_input();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Input(new_out)),
+                                    );
+                                }
+                                State2::Output(mut out) => {
+                                    let new_out = out.into_pull_up_input();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Input(new_out)),
+                                    );
+                                }
+                                    _=> {}
+                                }
+                        //        // match $ret{
+                        //         // State2::Input(mut ins) => {
+                        //         //     let new_out = ins.into_pull_up_input();
+                        //         //     core::mem::replace(
+                        //         //         &mut self.mapping2[1],
+                        //         //         //PhysicalPins::state(State2::Input(new_out)),
+                        //         //     );
+                        //         // }
+                        //         // State2::Output(mut out) => {
+                        //         //     let new_out = out.into_pull_up_input();
+                        //         //     core::mem::replace(
+                        //         //         &mut self.mapping2[1],
+                        //         //        // PhysicalPins::state(State2::Input(new_out)),
+                        //         //     );
+                        //         // }
+                        //         // _ => {}
+                          },
+                             _ => {}
+                        // }
+                         } 
+
+            };
+
+
+        }
         match state {
             Input => {
                 self[pin] = State::Input(false);
@@ -589,411 +471,100 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 let mut x = usize::from(pin);
                 match x {
                     0 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[0],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g0(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[0],
-                                        PhysicalPins::g0(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(0, PhysicalPins::g0);
                     }
                     1 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[1],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g1(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[1],
-                                        PhysicalPins::g1(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(1, PhysicalPins::g1);
                     }
                     2 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[2],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g2(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[2],
-                                        PhysicalPins::g2(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(2, PhysicalPins::g2);
                     }
                     3 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[3],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g3(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[3],
-                                        PhysicalPins::g3(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(3, PhysicalPins::g3);
                     }
                     4 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[4],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g4(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[4],
-                                        PhysicalPins::g4(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(4, PhysicalPins::g4);
                     }
                     5 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[5],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g5(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[5],
-                                        PhysicalPins::g5(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(5, PhysicalPins::g5);
                     }
                     6 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[6],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g6(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[6],
-                                        PhysicalPins::g6(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(6, PhysicalPins::g6);
                     }
                     7 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[7],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g7(mut val) => match val {
-                                State2::Input(mut ins) => {}
-                                State2::Output(mut out) => {
-                                    let new_out = out.into_pull_up_input();
-                                    core::mem::replace(
-                                        &mut self.mapping2[7],
-                                        PhysicalPins::g7(State2::Input(new_out)),
-                                    );
-                                }
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_input!(7, PhysicalPins::g7);
                     }
                     _ => {}
                 }
             }
             Output => {
+
+        macro_rules! set_state_output {
+            ($ pin : expr, $resp:path) => {
+                        let mut handle = {
+                            unsafe {
+                                core::mem::replace(
+                                    &mut self.mapping2[pin as usize],
+                                    core::mem::uninitialized(),
+                                )
+                            }
+                        };
+
+                          match handle {
+                             $resp(x) => {
+                                match x{
+                                State2::Input(mut ins) => {
+                                    let new_out = ins.into_push_pull_output();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Output(new_out)),
+                                    );
+                                }
+                                State2::Output(mut out) => {
+                                    let new_out = out.into_push_pull_output();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Output(new_out)),
+                                    );
+                                }
+                                    _=> {}
+                                }
+                          },
+                             _ => {}
+                        // }
+                         } 
+
+            };
+
+
+        }
+
                 self[pin] = State::Output(false);
                 let mut x = usize::from(pin);
                 match x {
                     0 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[0],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g0(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[0],
-                                        PhysicalPins::g0(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_output!(0, PhysicalPins::g0);
                     }
                     1 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[1],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g1(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[1],
-                                        PhysicalPins::g1(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_output!(1, PhysicalPins::g1); 
                     }
                     2 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[2],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g2(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[2],
-                                        PhysicalPins::g2(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                         set_state_output!(2, PhysicalPins::g2);
                     }
                     3 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[3],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g3(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[3],
-                                        PhysicalPins::g3(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                         set_state_output!(3, PhysicalPins::g3);
                     }
                     4 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[4],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g4(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[4],
-                                        PhysicalPins::g4(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                        set_state_output!(4, PhysicalPins::g4);
                     }
                     5 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[5],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g5(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[5],
-                                        PhysicalPins::g5(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                         set_state_output!(5, PhysicalPins::g5);
                     }
                     6 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[6],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g6(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[6],
-                                        PhysicalPins::g6(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                         set_state_output!(6, PhysicalPins::g6);
                     }
                     7 => {
-                        let mut handle = {
-                            unsafe {
-                                core::mem::replace(
-                                    &mut self.mapping2[7],
-                                    core::mem::uninitialized(),
-                                )
-                            }
-                        };
-
-                        match handle {
-                            PhysicalPins::g7(mut val) => match val {
-                                State2::Input(mut ins) => {
-                                    let new_out = ins.into_push_pull_output();
-                                    core::mem::replace(
-                                        &mut self.mapping2[7],
-                                        PhysicalPins::g7(State2::Output(new_out)),
-                                    );
-                                }
-                                State2::Output(mut out) => {}
-                                _ => {}
-                            },
-                            _ => {}
-                        }
+                         set_state_output!(7, PhysicalPins::g7);
                     }
                     _ => {}
                 }
@@ -1054,6 +625,8 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
             Some(flag) => flag.store(false, Ordering::SeqCst),
             None => unreachable!(),
         }
+
+        unsafe{GPIO_INTERRPUT_B = 0};
     }
 
     // TODO: make this default implementation?
@@ -1066,13 +639,14 @@ use cortex_m_rt_macros::interrupt;
 use tm4c123x::Interrupt as interrupt;
 
 #[interrupt]
-fn GPIOE(){
+fn GPIOF(){
+    unsafe{GPIO_INTERRPUT_F = 1};
 
 }
 
 #[interrupt]
-fn GPIOA(){
-
+fn GPIOB(){
+    unsafe{GPIO_INTERRPUT_B = 1};
 }
 // fn SysTick() {
 // }

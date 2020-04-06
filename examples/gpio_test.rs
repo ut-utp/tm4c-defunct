@@ -23,13 +23,13 @@ fn main() -> ! {
 
     //   //let clocks = sc.clock_setup.freeze();
 
-    let mut porta = p.GPIO_PORTF;
-    let mut porte = p.GPIO_PORTE;
+    let mut portf = p.GPIO_PORTF;
+    let mut portb = p.GPIO_PORTB;
     let mut pins = gpio::physical_pins::new(
         &sc.power_control,
         required_components {
-            porta: porta,
-            porte: porte,
+            portf: portf,
+            portb: portb,
         },
     );
     // pins.set_pin(GpioPin::G4, true);
@@ -40,11 +40,11 @@ fn main() -> ! {
    pins.set_state(GpioPin::G1, GpioState::Output);
    pins.set_state(GpioPin::G2, GpioState::Output);
    pins.set_state(GpioPin::G3, GpioState::Output);
-    pins.set_pin(GpioPin::G0, true);
+    pins.set_pin(GpioPin::G0, false);
     //pins.set_pin(GpioPin::G3, true);
     pins.set_pin(GpioPin::G1, true);
-    pins.set_pin(GpioPin::G2, true);
-    pins.set_pin(GpioPin::G3, true);
+    pins.set_pin(GpioPin::G2, false);
+    pins.set_pin(GpioPin::G3, false);
     //pins.set_pin(GpioPin::G2, false);
    // pins.set_state(GpioPin::G0, GpioState::Input);
    // pins.set_state(GpioPin::G0, GpioState::Output);
