@@ -18,8 +18,8 @@ extern crate cortex_m;
 use cortex_m::interrupt as cortex_int;
 
 
-static mut GPIO_INTERRPUT_B: i32 = 0;
-static mut GPIO_INTERRPUT_F: i32 = 0;
+static mut GPIO_INTERRUPTS: [u8; 8] = [0; 8];
+//static mut GPIO_INTERRPUT_F: i32 = 0;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -324,6 +324,13 @@ impl physical_pins<'_> {
                                         $resp(State2::Output(out)),
                                     );
                                 }
+
+                                State2::Interrupt(mut ins) => {
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Interrupt(ins)),
+                                    );                                  
+                                }
                                 _ => {}
                             },
                             _ => {}
@@ -437,7 +444,16 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                                         $resp(State2::Input(new_out)),
                                     );
                                 }
+                                State2::Interrupt(mut ins) =>{
+                                    let new_out = ins.into_pull_up_input();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Interrupt(new_out)),
+                                    );
+
+                                },
                                     _=> {}
+                               // }
                                 }
                         //        // match $ret{
                         //         // State2::Input(mut ins) => {
@@ -527,6 +543,14 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                                         $resp(State2::Output(new_out)),
                                     );
                                 }
+                                State2::Interrupt(mut ins) =>{
+                                    let new_out = ins.into_pull_up_input();
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Interrupt(new_out)),
+                                    );
+
+                                },
                                     _=> {}
                                 }
                           },
@@ -569,7 +593,88 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                     _ => {}
                 }
             }
-            Interrupt => self[pin] = State::Interrupt(false),
+            Interrupt => {
+                
+        macro_rules! set_state_interrupt {
+            ($ pin : expr, $resp:path) => {
+                        let mut handle = {
+                            unsafe {
+                                core::mem::replace(
+                                    &mut self.mapping2[pin as usize],
+                                    core::mem::uninitialized(),
+                                )
+                            }
+                        };
+
+                          match handle {
+                             $resp(x) => {
+                                match x{
+                                State2::Input(mut ins) => {
+                                    ins.set_interrupt_mode(tm4c123x_hal::gpio::InterruptMode::EdgeRising);
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Interrupt(ins)),
+                                    );
+                                    self[pin] = State::Interrupt(false);
+                                }
+                                State2::Output(mut out) => {
+                                    // out.set_interrupt_mode(tm4c123x_hal::gpio::InterruptMode::EdgeRising);
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Output(out)),
+                                    );
+                                }
+                                State2::Interrupt(mut ins) =>{
+                                    ins.set_interrupt_mode(tm4c123x_hal::gpio::InterruptMode::EdgeRising);
+                                    core::mem::replace(
+                                        &mut self.mapping2[pin as usize],
+                                        $resp(State2::Interrupt(ins)),
+                                    );
+                                    self[pin] = State::Interrupt(false);
+                                },
+                                    _=> {
+
+                                    }
+                                }
+                          },
+                             _ => {}
+                        // }
+                         } 
+
+            };
+
+
+        }
+                let mut x = usize::from(pin);
+                match x {
+                    0 => {
+                        set_state_interrupt!(0, PhysicalPins::g0);
+                    }
+                    1 => {
+                        set_state_interrupt!(1, PhysicalPins::g1); 
+                    }
+                    2 => {
+                         set_state_interrupt!(2, PhysicalPins::g2);
+                    }
+                    3 => {
+                         set_state_interrupt!(3, PhysicalPins::g3);
+                    }
+                    4 => {
+                        set_state_interrupt!(4, PhysicalPins::g4);
+                    }
+                    5 => {
+                         set_state_interrupt!(5, PhysicalPins::g5);
+                    }
+                    6 => {
+                         set_state_interrupt!(6, PhysicalPins::g6);
+                    }
+                    7 => {
+                         set_state_interrupt!(7, PhysicalPins::g7);
+                    }
+                    _ => {}
+                }
+
+            },
             Disabled => self[pin] = State::Disabled,
         };
 
@@ -607,16 +712,27 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
         //     None => Some(flag),
         //     Some(_) => unreachable!(),
         // }
+        unsafe{GPIO_INTERRUPTS = [0; 8];};
     }
 
     fn interrupt_occurred(&self, pin: GpioPin) -> bool {
-        match self.flags[pin] {
-            Some(flag) => {
-                let occurred = flag.load(Ordering::SeqCst);
-                self.interrupts_enabled(pin) && occurred
-            }
-            None => unreachable!(),
+        // match self.flags[pin] {
+        //     Some(flag) => {
+        //         let occurred = flag.load(Ordering::SeqCst);
+        //         self.interrupts_enabled(pin) && occurred
+        //     }
+        //     None => unreachable!(),
+        // }
+        let mut res = false;
+        unsafe{
+        if(GPIO_INTERRUPTS[usize::from(pin)]==1){
+            res = true
         }
+        else{
+        res=false;
+    }
+};
+    res
     }
 
     // TODO: decide functionality when no previous flag registered
@@ -626,7 +742,8 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
             None => unreachable!(),
         }
 
-        unsafe{GPIO_INTERRPUT_B = 0};
+        unsafe{GPIO_INTERRUPTS[usize::from(pin)]==0;};
+        //unsafe{GPIO_INTERRPUT_B = 0};
     }
 
     // TODO: make this default implementation?
@@ -640,13 +757,26 @@ use tm4c123x::Interrupt as interrupt;
 
 #[interrupt]
 fn GPIOF(){
-    unsafe{GPIO_INTERRPUT_F = 1};
+
 
 }
 
 #[interrupt]
 fn GPIOB(){
-    unsafe{GPIO_INTERRPUT_B = 1};
+   // unsafe{GPIO_INTERRPUT_B = 1};
+    unsafe{
+        let mut sc = &*tm4c123x::GPIO_PORTB::ptr();
+        //sc.
+        let bits = sc.ris.read().bits();
+
+        let trail_zeros = bits.trailing_zeros();
+
+        //sc.icr.write(|w| unsafe{w.bits(1)});   
+        if(trail_zeros <= 7){     
+        GPIO_INTERRUPTS[trail_zeros as usize] = 1;
+       }
+
+    };
 }
 // fn SysTick() {
 // }
