@@ -5,7 +5,7 @@ use hal::PwmPin as hal_pwm_pin;
 
 
 use lc3_traits::peripherals::pwm::{
-    Pwm, PwmPin, PwmPinArr, PwmSetDutyError, PwmSetPeriodError, PwmState,
+    Pwm, PwmPin, PwmPinArr, PwmState,
 };
 
 pub trait Channel{}
@@ -53,7 +53,7 @@ where PWM: hal_pwm<Channel=C, Duty=D, Time=T> + From<u8>,
       C  : From<u8>,
       D  : From<u8>,
 {
-    fn set_state(&mut self, pin: PwmPin, state: PwmState) -> Result<(), PwmSetPeriodError> {
+    fn set_state(&mut self, pin: PwmPin, state: PwmState){
        // use PwmState::*;
        match pin{
        	PwmPin::P0 =>{
@@ -89,7 +89,7 @@ where PWM: hal_pwm<Channel=C, Duty=D, Time=T> + From<u8>,
     }    
     }
     	
-        Ok(())
+       // Ok(())
     }
 
     fn get_state(&self, pin: PwmPin) -> PwmState {
@@ -99,12 +99,12 @@ where PWM: hal_pwm<Channel=C, Duty=D, Time=T> + From<u8>,
 
     //Questionable feature. Don't think it makes sense to get physical value of pin Embedded hsl doesn't have
     //this either
-    fn get_pin(&self, pin: PwmPin) -> bool {
-    	unimplemented!()
-       // true
-    }
+    // fn get_pin(&self, pin: PwmPin) -> bool {
+    // 	unimplemented!()
+    //    // true
+    // }
 
-    fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) -> Result<(), PwmSetDutyError> {
+    fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) {
         match pin{
        	PwmPin::P0 =>{
        // match state{
@@ -127,7 +127,7 @@ where PWM: hal_pwm<Channel=C, Duty=D, Time=T> + From<u8>,
        		//self.pwm_duties[1]=d;
     }    
     }
-        Ok(())
+      //  Ok(())
     }
 
     fn get_duty_cycle(&self, pin: PwmPin) -> u8 {

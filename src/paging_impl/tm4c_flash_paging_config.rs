@@ -9,7 +9,7 @@ use lc3_isa::{
 };
 use crate::persistent_data_management::page::{Paging, SwapError};
 
-const PRIMARY_START_SECTOR: u32 = 80;   //This will be given a value once code is frozen
+const PRIMARY_START_SECTOR: u32 = 256;   //This will be given a value once code is frozen
 const PRIMARY_NUM_SECTORS:  u32 = 128;
 const SWAP_START_SECOTR:    u32 = 300;
 const SWAP_SIZE        :    u32 = 100;

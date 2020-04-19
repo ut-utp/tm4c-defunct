@@ -25,6 +25,7 @@ use lc3_traits::peripherals::adc::{
     AdcStateMismatch as StateMismatch,
 };
 use lc3_baseline_sim::interp;
+
 #[entry]
 fn main() -> ! {
     //let builder = interp::InterpreterBuilder::<'_,_, _>::new();
@@ -80,72 +81,27 @@ fn main() -> ! {
     let out1 = adc_shim.read(Pin::A0);
     match out1{
       Ok(out) =>{
-        if (out>215){
+        if (out<100){
               pwm_shim.set_state(
         PwmPin::P0,
-        PwmState::Enabled(core::num::NonZeroU8::new(60).unwrap()));
+        PwmState::Enabled(core::num::NonZeroU8::new(100).unwrap()));
               pwm_shim.set_state(
         PwmPin::P1,
-        PwmState::Enabled(core::num::NonZeroU8::new(60).unwrap()));
-        //       pwm_shim.set_state(
-        // PwmPin::P1,
-        // PwmState::Disabled);
-    // pwm_shim.set_state(
-    //     PwmPin::P1,
-    //     PwmState::Enabled(core::num::NonZeroU8::new(25).unwrap()),
-    // );
+        PwmState::Enabled(core::num::NonZeroU8::new(100).unwrap()));
         }
        else{
               pwm_shim.set_state(
         PwmPin::P0,
         PwmState::Disabled,
     );
-    // pwm_shim.set_state(
-    //     PwmPin::P1,
-    //     PwmState::Disabled,
-    // );        
-      }
-      },
-      _=>{},
-    }
-
-
-    adc_shim.set_state(Pin::A1, AdcState::Enabled);
-    let out2 = adc_shim.read(Pin::A1);
-    match out2{
-      Ok(out) =>{
-        if (out>215){
-              pwm_shim.set_state(
-        PwmPin::P0,
-        PwmState::Enabled(core::num::NonZeroU8::new(60).unwrap()));
-              pwm_shim.set_state(
-        PwmPin::P1,
-        PwmState::Enabled(core::num::NonZeroU8::new(60).unwrap()));
-        //       pwm_shim.set_state(
-        // PwmPin::P1,
-        // PwmState::Disabled);
-    // pwm_shim.set_state(
-    //     PwmPin::P1,
-    //     PwmState::Enabled(core::num::NonZeroU8::new(25).unwrap()),
-    // );
-        }
-       else{
-              pwm_shim.set_state(
+    pwm_shim.set_state(
         PwmPin::P1,
         PwmState::Disabled,
-    );
-    // pwm_shim.set_state(
-    //     PwmPin::P1,
-    //     PwmState::Disabled,
-    // );        
+    );        
       }
       },
       _=>{},
     }
-    // pins.set_pin(GpioPin::G0, false);
-    // pins.set_pin(GpioPin::G1, false);
-    // pins.set_pin(GpioPin::G2, false);
-    // pins.set_pin(GpioPin::G3, false);
 
 
     }

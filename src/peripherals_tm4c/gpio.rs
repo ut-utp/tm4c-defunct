@@ -17,6 +17,8 @@ use tm4c123x_hal::{prelude::*, Peripherals};
 extern crate cortex_m;
 use cortex_m::interrupt as cortex_int;
 
+use tm4c123x::NVIC as nvic;
+
 
 static mut GPIO_INTERRUPTS: [u8; 8] = [0; 8];
 //static mut GPIO_INTERRPUT_F: i32 = 0;
@@ -52,7 +54,7 @@ impl From<State> for GpioState {
 enum physical_pin_mappings {
     GPIO0(PF1<Output<PushPull>>),
     GPIO1(PF2<Output<PushPull>>),
-    GPIO2(PF3<Output<PushPull>>),
+    GPIO2(PF4<Output<PushPull>>),
     GPIO3(PB3<Output<PushPull>>),
     GPIO4(PB4<Input<PullUp>>),
     GPIO5(PB5<Input<PullUp>>),
@@ -76,7 +78,7 @@ where
 pub enum PhysicalPins {
     g0(State2<PF1<Input<PullUp>>, PF1<Output<PushPull>>>),
     g1(State2<PF2<Input<PullUp>>, PF2<Output<PushPull>>>),
-    g2(State2<PF3<Input<PullUp>>, PF3<Output<PushPull>>>),
+    g2(State2<PF4<Input<PullUp>>, PF4<Output<PushPull>>>),
     g3(State2<PB3<Input<PullUp>>, PB3<Output<PushPull>>>),
     g4(State2<PB4<Input<PullUp>>, PB4<Output<PushPull>>>),
     g5(State2<PB5<Input<PullUp>>, PB5<Output<PushPull>>>),
@@ -118,8 +120,8 @@ impl Default for physical_pins<'_> {
         gpiof1.set_low();
         let mut gpiof2 = portf.pf2.into_push_pull_output();
         gpiof2.set_high();
-        let mut gpiof3 = portf.pf3.into_push_pull_output();
-        gpiof3.set_low();
+        let mut gpiof4 = portf.pf4.into_push_pull_output();
+        gpiof4.set_low();
         // let mut gpioa3 = porta.pf4.into_push_pull_output();
         // gpioa3.set_low();
 
@@ -145,8 +147,8 @@ impl Default for physical_pins<'_> {
                 PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
                     gpiof2,
                 )),
-                PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(
-                    gpiof3,
+                PhysicalPins::g2(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
+                    gpiof4,
                 )),
                 PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
                     gpiob3,
@@ -186,16 +188,20 @@ impl physical_pins<'_> {
         ];
         let p_st = peripheral_set;
 
-
+        let mut nvic_field;
+        unsafe{
+        let p_core = tm4c123x_hal::CorePeripherals::steal();
+        nvic_field = p_core.NVIC;
+        };
         //let mut sc = sys_init();
         // let x = p_st.GPIO_PORTA;
         let mut portf = p_st.portf.split(power);
         let mut gpiof1 = portf.pf1.into_push_pull_output();
         gpiof1.set_low();
         let mut gpiof2 = portf.pf2.into_push_pull_output();
-        gpiof2.set_high();
-        let mut gpiof3 = portf.pf3.into_push_pull_output();
-        gpiof3.set_low();
+        gpiof2.set_low();
+        let mut gpiof4 = portf.pf4.into_push_pull_output();
+        gpiof4.set_low();
         // let mut gpioa3 = porta.pf4.into_push_pull_output();
         // gpioa3.set_low();
 
@@ -209,6 +215,11 @@ impl physical_pins<'_> {
         let mut gpiob6 = portb.pb6.into_pull_up_input();
 
         let mut gpiob7 = portb.pb7.into_pull_up_input();
+
+       unsafe{nvic::unmask(tm4c123x::Interrupt::GPIOF);};
+       unsafe{nvic_field.set_priority(tm4c123x::Interrupt::GPIOF, 1);};
+       unsafe{nvic_field.enable(tm4c123x::Interrupt::GPIOF);};
+       unsafe{cortex_int::enable();};
         //let mut gpioe4 = porte.pe4;
         //let r1 = gpioe4.into_pull_up_input();
         //let r2 = r1.into_push_pull_output();
@@ -223,8 +234,8 @@ impl physical_pins<'_> {
                 PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
                     gpiof2,
                 )),
-                PhysicalPins::g2(State2::<PF3<Input<PullUp>>, PF3<Output<PushPull>>>::Output(
-                    gpiof3,
+                PhysicalPins::g2(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
+                    gpiof4,
                 )),
                 PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
                     gpiob3,
@@ -698,12 +709,14 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
     fn write(&mut self, pin: GpioPin, bit: bool) -> Result<(), GpioWriteError> {
         use State::*;
 
-        if let Output(_) = self[pin] {
-            self[pin] = Output(bit);
-            Ok(())
-        } else {
-            Err(GpioWriteError((pin, self[pin].into())))
-        }
+        // if let Output(_) = self[pin] {
+        //     self[pin] = Output(bit);
+        //     Ok(())
+        // } else {
+        //     Err(GpioWriteError((pin, self[pin].into())))
+        // }
+        self.set_pin(pin, bit);
+        Ok(())
     }
 
     // TODO: decide functionality when no previous flag registered
@@ -737,10 +750,10 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
 
     // TODO: decide functionality when no previous flag registered
     fn reset_interrupt_flag(&mut self, pin: GpioPin) {
-        match self.flags[pin] {
-            Some(flag) => flag.store(false, Ordering::SeqCst),
-            None => unreachable!(),
-        }
+        // match self.flags[pin] {
+        //     Some(flag) => flag.store(false, Ordering::SeqCst),
+        //     None => unreachable!(),
+        // }
 
         unsafe{GPIO_INTERRUPTS[usize::from(pin)]==0;};
         //unsafe{GPIO_INTERRPUT_B = 0};
@@ -758,6 +771,34 @@ use tm4c123x::Interrupt as interrupt;
 #[interrupt]
 fn GPIOF(){
 
+    unsafe{
+        let mut sc = &*tm4c123x::GPIO_PORTF::ptr();
+        //sc.
+        let bits = sc.ris.read().bits();
+
+        let trail_zeros = bits.trailing_zeros();
+
+        //sc.icr.write(|w| unsafe{w.bits(1)});   
+        if(trail_zeros <= 7){     
+        GPIO_INTERRUPTS[trail_zeros as usize] = 1;
+       }
+        // let mut p = unsafe { &*tm4c123x::PWM0::ptr() };
+        // //let p = Peripherals::take().unwrap().PWM1;
+        // p.enable
+        //     .write(|w| unsafe { w.bits(p.enable.read().bits() & !1 ) });
+
+        // p = unsafe { &*tm4c123x::PWM1::ptr() };
+        // //let p = Peripherals::take().unwrap().PWM1;
+        // p.enable
+        //     .write(|w| unsafe { w.bits(p.enable.read().bits()  & !2 ) });
+    let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
+    let mut bits = p.data.read().bits();
+    bits ^= 0x02;
+    p.data.write(|w| unsafe { w.bits(bits) });
+    p.icr.write(|w| unsafe { w.bits(0x10) });
+    //let button = portb.pb3.into_pull_up_input(); 
+    
+    };
 
 }
 

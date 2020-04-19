@@ -1,6 +1,6 @@
 use core::num::NonZeroU8;
 use lc3_traits::peripherals::pwm::{
-    Pwm, PwmPin, PwmPinArr, PwmSetDutyError, PwmSetPeriodError, PwmState,
+    Pwm, PwmPin, PwmPinArr, PwmState,
 };
 
 extern crate tm4c123x;
@@ -96,30 +96,38 @@ impl PwmShim {
             power, sysctl::Domain::Pwm0,
             sysctl::RunMode::Run, sysctl::PowerState::On);
         sysctl::reset(power, sysctl::Domain::Pwm0);
-        sysctl::control_power(
-            power, sysctl::Domain::Pwm1,
-            sysctl::RunMode::Run, sysctl::PowerState::On);
-        sysctl::reset(power, sysctl::Domain::Pwm1);
+       // sysctl::control_power(
+       //      power, sysctl::Domain::Pwm1,
+       //      sysctl::RunMode::Run, sysctl::PowerState::On);
+       //  sysctl::reset(power, sysctl::Domain::Pwm1);
         let pb6 = portb.pb6.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb6
-      //  let pb7 = portd.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb7
-        let pd0 = portd.pd0.into_af_push_pull::<gpio::AF4>(&mut portd.control); //pwm0 pb7
+        //let pb7 = portd.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb7
+      //  let pd0 = portd.pd0.into_af_push_pull::<gpio::AF4>(&mut portd.control); //pwm0 pb7
         let pb7 = portb.pb7.into_af_push_pull::<gpio::AF4>(&mut portb.control); //pwm0 pb7
-        let pd1 = portd.pd1.into_af_push_pull::<gpio::AF4>(&mut portd.control); //pwm0 pb7
-        let pwm_divider = p
-            .rcc
-            .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
+        //let pd1 = portd.pd1.into_af_push_pull::<gpio::AF5>(&mut portd.control); //pwm0 pb7
+        // let pwm_divider = p
+        //     .rcc
+        //     .write(|w| unsafe { w.bits((p.rcc.read().bits() & !0x000E0000) | (0x00100000)) });
         //let portb_sysctl = peripheral_set.sysctl.rcgcgpio.write(|w| unsafe{w.bits(2)});
         peripheral_set.pwm0.ctl.write(|w| unsafe { w.bits(0) });
-        peripheral_set.pwm1.ctl.write(|w| unsafe { w.bits(0) });
+      //  peripheral_set.pwm1.ctl.write(|w| unsafe { w.bits(0) });
         peripheral_set
             .pwm0
             ._0_gena
-            .write(|w| unsafe { w.bits(0xC8) });
-
+            .write(|w| unsafe { w.bits(0x00C8) });
         peripheral_set
-            .pwm1
-            ._1_gena
-            .write(|w| unsafe { w.bits(0xC8) });
+            .pwm0
+            ._0_genb
+            .write(|w| unsafe { w.bits(0x0C08) });
+
+        // peripheral_set
+        //     .pwm1
+        //     ._1_gena
+        //     .write(|w| unsafe { w.bits(0xC8) });
+        // peripheral_set
+        //     .pwm1
+        //     ._1_genb
+        //     .write(|w| unsafe { w.bits(0x0C8) });
 
         Self {
             states: PwmPinArr([PwmState::Disabled; PwmPin::NUM_PINS]),
@@ -145,7 +153,7 @@ impl PwmShim {
     }
 }
 impl Pwm for PwmShim {
-    fn set_state(&mut self, pin: PwmPin, state: PwmState) -> Result<(), PwmSetPeriodError> {
+    fn set_state(&mut self, pin: PwmPin, state: PwmState) {
         use PwmState::*;
         let x = usize::from(pin);
         match x {
@@ -155,11 +163,13 @@ impl Pwm for PwmShim {
                         //let NonZeroU8(extract)=dut;
                         let p = unsafe { &*tm4c123x::PWM0::ptr() };
                         p._0_load.write(|w| unsafe{w.bits(255)});
+                     //   p._1_load.write(|w| unsafe{w.bits(0x018F)});
                         p._0_cmpa.write(|w| unsafe{w.bits(dut.get().into())});
                         p._0_ctl.write(|w| unsafe{w.bits(p._0_ctl.read().bits() | 1)});
+                    //    p.enable
+                      //      .write(|w| unsafe { w.bits(p.enable.read().bits() & !3) });
                         p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
-                   
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });                   
 
                     }
                     
@@ -215,21 +225,20 @@ impl Pwm for PwmShim {
                     Enabled(dut) => {
                         // let p = Peripherals::take().unwrap().PWM1;
                         //let NonZeroU8(extract)=dut;
-                        let p = unsafe { &*tm4c123x::PWM1::ptr() };
-                        p._1_load.write(|w| unsafe{w.bits(255)});
-                        p._1_cmpa.write(|w| unsafe{w.bits(dut.get().into())});
-                        p._1_ctl.write(|w| unsafe{w.bits(p._1_ctl.read().bits() | 1)});
-                        p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
+                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
+                        p._0_load.write(|w| unsafe{w.bits(255)});
+                        p._0_cmpb.write(|w| unsafe{w.bits(dut.get().into())});
+                        p._0_ctl.write(|w| unsafe{w.bits(p._0_ctl.read().bits() | 1)});
                    
-
+                        p.enable
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 2) });
 
                     }
                     Disabled => {
-                        let p = unsafe { &*tm4c123x::PWM1::ptr() };
+                        let p = unsafe { &*tm4c123x::PWM0::ptr() };
                         //let p = Peripherals::take().unwrap().PWM1;
                         p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() & !2) });
                     }
                 }
             }
@@ -238,18 +247,18 @@ impl Pwm for PwmShim {
         }
         self.states[pin] = state;
 
-        Ok(())
+       // Ok(())
     }
 
     fn get_state(&self, pin: PwmPin) -> PwmState {
         self.states[pin]
     }
 
-    fn get_pin(&self, pin: PwmPin) -> bool {
-        return PWM_SHIM_PINS[pin].load(Ordering::SeqCst);
-    }
+    // fn get_pin(&self, pin: PwmPin) -> bool {
+    //     return PWM_SHIM_PINS[pin].load(Ordering::SeqCst);
+    // }
 
-    fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) -> Result<(), PwmSetDutyError> {
+    fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) {
         match pin {
             P0 => {
                 let p = unsafe { &*tm4c123x::PWM0::ptr() };
@@ -278,7 +287,7 @@ impl Pwm for PwmShim {
             }
         }
         self.duty_cycle[pin] = duty;
-        Ok(())
+        //Ok(())
     }
 
     fn get_duty_cycle(&self, pin: PwmPin) -> u8 {

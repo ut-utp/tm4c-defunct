@@ -15,9 +15,10 @@ use lc3_traits::peripherals::PeripheralSet;
 pub type Peripheralstm4c<'s> = PeripheralSet<
     's,
     GpioStub,
-    AdcStub,
+    adc::AdcShim,
     pwm::PwmShim,
     TimersStub,
+   // timers::TimersShim<'s>,
     ClockStub,
     InputStub,
     OutputStub,

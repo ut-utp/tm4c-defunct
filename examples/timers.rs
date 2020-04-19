@@ -8,22 +8,51 @@ use cortex_m_semihosting::{debug, hprintln};
 use hal::prelude::*;
 
 use lc3_traits::peripherals::timers::{
-    TimerArr, TimerId, TimerMiscError, TimerState, TimerStateMismatch, Timers,
+    TimerArr, TimerId, TimerState, Timers, TimerMode
 };
 use lc3_tm4c::peripherals_tm4c::timers;
 use lc3_tm4c::peripherals_tm4c::timers::required_components;
-
+use lc3_tm4c::peripherals_tm4c::gpio;
+use lc3_tm4c::peripherals_tm4c::gpio::required_components as gpio_req;
+use lc3_traits::peripherals::gpio::{
+    Gpio, GpioMiscError, GpioPin, GpioPinArr, GpioReadError, GpioState, GpioWriteError,
+};
 #[entry]
 fn main() -> ! {
+
  	    let p = hal::Peripherals::take().unwrap();
  	    let p_core = hal::CorePeripherals::take().unwrap();
  	    let nvic = p_core.NVIC;
+	   let mut portf = p.GPIO_PORTF;
+	    let mut portb = p.GPIO_PORTB;
+	    let mut sc = p.SYSCTL.constrain();
+	    let mut pins = gpio::physical_pins::new(
+	        &sc.power_control,
+	        gpio_req {
+	            portf: portf,
+	            portb: portb,
+	        },
+	    );
+	    // pins.set_pin(GpioPin::G4, true);
+	    //let mut pins = gpio::physical_pins::default();
+	    // pins.set_pin(GpioPin::G4, false);
+	    // pins.set_pin(GpioPin::G5, true);
+	   pins.set_state(GpioPin::G0, GpioState::Output);
+	   pins.set_state(GpioPin::G1, GpioState::Output);
+	   pins.set_state(GpioPin::G2, GpioState::Output);
+	   pins.set_state(GpioPin::G3, GpioState::Output);
+	    pins.set_pin(GpioPin::G0, false);
+	    //pins.set_pin(GpioPin::G3, true);
+	    pins.set_pin(GpioPin::G1, false);
+	    pins.set_pin(GpioPin::G2, true);
+	    pins.set_pin(GpioPin::G3, false);
  	    //let mut porte = p.GPIO_PORTE;
  	    let mut t0 = p.TIMER0;
  	    let mut t1= p.TIMER1;
- 	    let mut sc = p.SYSCTL.constrain();
+ 	    
  	   // let mut pwm1 = p.PWM1;
  	    let mut timer_shim = timers::TimersShim::new(&sc.power_control, required_components{timer0: t0, timer1: t1}, nvic);
+ 	    timer_shim.set_state(TimerId::T0, TimerState::WithPeriod(core::num::NonZeroU16::new(60000).unwrap()));
  	    //timer_shim.
  	    //adc_shim.set_state(Pin::A0, AdcState::Enabled);
  	    loop{

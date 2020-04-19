@@ -110,7 +110,7 @@ impl AdcShim {
 }
 
 impl Adc for AdcShim {
-    fn set_state(&mut self, pin: Pin, state: AdcState) -> Result<(), ()> {
+    fn set_state(&mut self, pin: Pin, state: AdcState) -> Result<(), AdcMiscError> {
         use AdcState::*;
         match state {
             Enabled => {
@@ -158,7 +158,7 @@ impl Adc for AdcShim {
             Disabled => {
                 self.states[pin] = State::Disabled;
                let ad0 = unsafe { &*tm4c123x::ADC0::ptr() }; 
-              ad0.actss.write(|w| unsafe{w.bits((ad0.actss.read().bits() & !0x0008 ))});
+             // ad0.actss.write(|w| unsafe{w.bits((ad0.actss.read().bits() & !0x0008 ))});
             },
         };
         Ok(())
@@ -179,11 +179,46 @@ impl Adc for AdcShim {
         use State::*;
         match self.states[pin] {
             Enabled(value) => {
-                let p = unsafe { &*tm4c123x::ADC0::ptr() };
-                p.pssi.write(|w| unsafe{w.bits(0x0008)});
-                while((p.ris.read().bits()&0x08)==0){};
-                let out = p.ssfifo3.read().bits()& 0x0FFF;
-                p.isc.write(|w| unsafe{w.bits(0x00008)});
+                let ad0 = unsafe { &*tm4c123x::ADC0::ptr() };
+              let x = usize::from(pin);
+              match x{
+                0 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 0 ))});
+                }
+                1 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 1 ))});
+                }
+                2 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 2 ))});
+
+                }
+                3 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 3 ))});
+                }
+                4 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 8 ))});
+                }
+                5 => {
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() & !0x000F ))});
+                    ad0.ssmux3.write(|w| unsafe{w.bits((ad0.ssmux3.read().bits() + 9 ))});
+                }
+
+
+                 _=> {
+
+                }
+
+
+              } 
+                ad0.pssi.write(|w| unsafe{w.bits(0x0008)});
+                while((ad0.ris.read().bits()&0x08)==0){};
+                let out = ad0.ssfifo3.read().bits()& 0x0FFF;
+                ad0.isc.write(|w| unsafe{w.bits(0x00008)});
                 Ok((out/16) as u8)
 
             },
