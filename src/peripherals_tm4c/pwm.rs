@@ -169,7 +169,7 @@ impl Pwm for PwmShim {
                     //    p.enable
                       //      .write(|w| unsafe { w.bits(p.enable.read().bits() & !3) });
                         p.enable
-                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });                   
+                            .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });                  
 
                     }
                     
@@ -225,9 +225,11 @@ impl Pwm for PwmShim {
                     Enabled(dut) => {
                         // let p = Peripherals::take().unwrap().PWM1;
                         //let NonZeroU8(extract)=dut;
+                        let d: u32 = dut.get().into();
+                        let clon = d;
                         let p = unsafe { &*tm4c123x::PWM0::ptr() };
                         p._0_load.write(|w| unsafe{w.bits(255)});
-                        p._0_cmpb.write(|w| unsafe{w.bits(dut.get().into())});
+                        p._0_cmpb.write(|w| unsafe{w.bits(clon)});
                         p._0_ctl.write(|w| unsafe{w.bits(p._0_ctl.read().bits() | 1)});
                    
                         p.enable
@@ -259,8 +261,9 @@ impl Pwm for PwmShim {
     // }
 
     fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) {
-        match pin {
-            P0 => {
+        let x = usize::from(pin);
+        match x {
+            0 => {
                 let p = unsafe { &*tm4c123x::PWM0::ptr() };
                 p.enable
                     .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
@@ -271,20 +274,21 @@ impl Pwm for PwmShim {
                 p._0_cmpa.write(|w| unsafe { w.bits(new_duty) });
                 p.enable
                     .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
-            }
+            },
 
-            P1 => {
-                let p = unsafe { &*tm4c123x::PWM1::ptr() };
+            1 => {
+                let p = unsafe { &*tm4c123x::PWM0::ptr() };
                 p.enable
-                    .write(|w| unsafe { w.bits(p.enable.read().bits() & !1) });
+                    .write(|w| unsafe { w.bits(p.enable.read().bits() & !2) });
 
-                let period = p._1_load.read().bits();
+                let period = p._0_load.read().bits();
 
                 let new_duty = ((duty as u32) * period / 256);
-                p._1_cmpa.write(|w| unsafe { w.bits(new_duty) });
+                p._0_cmpb.write(|w| unsafe { w.bits(new_duty) });
                 p.enable
-                    .write(|w| unsafe { w.bits(p.enable.read().bits() | 1) });
+                    .write(|w| unsafe { w.bits(p.enable.read().bits() | 2) });
             }
+            _=> {}
         }
         self.duty_cycle[pin] = duty;
         //Ok(())

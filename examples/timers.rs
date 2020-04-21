@@ -17,6 +17,11 @@ use lc3_tm4c::peripherals_tm4c::gpio::required_components as gpio_req;
 use lc3_traits::peripherals::gpio::{
     Gpio, GpioMiscError, GpioPin, GpioPinArr, GpioReadError, GpioState, GpioWriteError,
 };
+
+use lc3_traits::peripherals::clock::Clock;
+
+use lc3_tm4c::peripherals_tm4c::clock;
+use lc3_tm4c::peripherals_tm4c::clock::required_components as clock_req;
 #[entry]
 fn main() -> ! {
 
@@ -51,12 +56,16 @@ fn main() -> ! {
  	    let mut t1= p.TIMER1;
  	    
  	   // let mut pwm1 = p.PWM1;
- 	    let mut timer_shim = timers::TimersShim::new(&sc.power_control, required_components{timer0: t0, timer1: t1}, nvic);
- 	    timer_shim.set_state(TimerId::T0, TimerState::WithPeriod(core::num::NonZeroU16::new(60000).unwrap()));
+    let mut t2= p.TIMER2;
+    let mut clock = clock::Tm4cClock::new(clock_req{timer: t2}, &sc.power_control);
+ 	    let mut timer_shim = timers::TimersShim::new(&sc.power_control, required_components{timer0: t0, timer1: t1});
+ 	    timer_shim.set_state(TimerId::T0, TimerState::WithPeriod(core::num::NonZeroU16::new(600).unwrap()));
  	    //timer_shim.
  	    //adc_shim.set_state(Pin::A0, AdcState::Enabled);
  	    loop{
  	    //adc_shim.read(Pin::A0);
+ 	    let ts = clock.get_milliseconds();
+ 	    let x = ts;
  	}
 
 		

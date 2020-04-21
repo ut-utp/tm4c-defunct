@@ -73,7 +73,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
 
  impl TimersShim<'_> {
 
-     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components, mut nvic_field: tm4c123x::NVIC) -> Self {
+     pub fn new(power: &tm4c123x_hal::sysctl::PowerControl, peripheral_set: required_components) -> Self {
 
         let t1 = peripheral_set.timer0;
         let t2 = peripheral_set.timer1;
@@ -89,8 +89,11 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
         t1.icr.write(|w| unsafe{w.bits(1)});
         t1.imr.write(|w| unsafe{w.bits(1)});
        // t1.ctl.write(|w| unsafe{w.bits(1)});
-
-
+        let mut nvic_field;
+        unsafe{
+        let p_core = tm4c123x_hal::CorePeripherals::steal();
+        nvic_field = p_core.NVIC;
+        };
        unsafe{nvic::unmask(tm4c123x::Interrupt::TIMER0A);};
        unsafe{nvic_field.set_priority(tm4c123x::Interrupt::TIMER0A, 1);};
        unsafe{nvic_field.enable(tm4c123x::Interrupt::TIMER0A);};
@@ -319,12 +322,12 @@ fn TIMER0A(){
 
     //DEBUG
 
-    // let mut sc = &*tm4c123x::GPIO_PORTF::ptr();
-    // let bits = sc.ris.read().bits();
-    // let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
-    // let mut bits = p.data.read().bits();
-    // bits ^= 0x02;
-    // p.data.write(|w| unsafe { w.bits(bits) });  
+    let mut sc = &*tm4c123x::GPIO_PORTF::ptr();
+    let bits = sc.ris.read().bits();
+    let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
+    let mut bits = p.data.read().bits();
+    bits ^= 0x02;
+    p.data.write(|w| unsafe { w.bits(bits) });  
 };
     unsafe{COUNT += 1};
 

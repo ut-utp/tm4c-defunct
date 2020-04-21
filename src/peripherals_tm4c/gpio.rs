@@ -21,6 +21,7 @@ use tm4c123x::NVIC as nvic;
 
 
 static mut GPIO_INTERRUPTS: [u8; 8] = [0; 8];
+//static mut GPIO_ATOMIC_FLAGS: Option<&GpioPinArr<AtomicBool>> = None;
 //static mut GPIO_INTERRPUT_F: i32 = 0;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -88,7 +89,7 @@ pub enum PhysicalPins {
 
 pub struct physical_pins<'a> {
     states: GpioPinArr<State>,
-    flags: GpioPinArr<Option<&'a AtomicBool>>,
+    flags:  Option<&'a GpioPinArr<AtomicBool>>,
     //mapping: [physical_pin_mappings; 8],
     mapping2: [PhysicalPins; 8],
     Peripheral_set: Option<&'a mut tm4c123x_hal::Peripherals>,
@@ -138,7 +139,7 @@ impl Default for physical_pins<'_> {
 
         Self {
             states: GpioPinArr(states_init),
-            flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+            flags: None,
             //mapping: [],
             mapping2: ([
                 PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
@@ -225,7 +226,7 @@ impl physical_pins<'_> {
         //let r2 = r1.into_push_pull_output();
         Self {
             states: GpioPinArr(states_init),
-            flags: GpioPinArr([None; GpioPin::NUM_PINS]),
+            flags: None,
             //mapping: [],
             mapping2: ([
                 PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
@@ -400,10 +401,54 @@ impl physical_pins<'_> {
     }
 
     fn raise_interrupt(&self, pin: GpioPin) {
-        match self.flags[pin] {
-            Some(flag) => flag.store(true, Ordering::SeqCst),
+        // match self.flags[pin] {
+        //     Some(flag) => flag.store(true, Ordering::SeqCst),
+        //     None => unreachable!(),
+        // }
+    }
+
+    fn update_flags(&self){
+        unsafe{
+        for i in 0..8 {
+        if(GPIO_INTERRUPTS[i]==1){
+        match self.flags {
+            Some(flags) => {
+                match i {
+                    0 =>{
+                     flags[GpioPin::G0].store(true, Ordering::SeqCst);
+                    }
+                    1 =>{
+                     flags[GpioPin::G1].store(true, Ordering::SeqCst);
+                    }
+                    2 =>{
+                     flags[GpioPin::G2].store(true, Ordering::SeqCst);
+                    }
+                    3 =>{
+                     flags[GpioPin::G3].store(true, Ordering::SeqCst);
+                    }
+                    4 =>{
+                     flags[GpioPin::G4].store(true, Ordering::SeqCst);
+                    }
+                    5 =>{
+                     flags[GpioPin::G5].store(true, Ordering::SeqCst);
+                    }
+                    6 =>{
+                     flags[GpioPin::G6].store(true, Ordering::SeqCst);
+                    }
+                    7 =>{
+                     flags[GpioPin::G7].store(true, Ordering::SeqCst);
+                    }
+                    _=>{}
+                }
+
+               
+            }
             None => unreachable!(),
         }
+        }
+        }
+    };
+
     }
 
     /// Gets the value of a pin.
@@ -721,39 +766,46 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
 
     // TODO: decide functionality when no previous flag registered
     fn register_interrupt_flags(&mut self, flags: &'a GpioPinArr<AtomicBool>) {
-        // self.flags[pin] = match self.flags[pin] {
-        //     None => Some(flag),
-        //     Some(_) => unreachable!(),
-        // }
+      // unsafe{ GPIO_ATOMIC_FLAGS = Some(flags);};
         unsafe{GPIO_INTERRUPTS = [0; 8];};
+        self.flags = match self.flags {
+            None => Some(flags),
+            Some(_) => {
+                // warn!("re-registering interrupt flags!");
+                Some(flags)
+            }
+        }
+        //unsafe{GPIO_INTERRUPTS = [0; 8];};
     }
 
     fn interrupt_occurred(&self, pin: GpioPin) -> bool {
-        // match self.flags[pin] {
-        //     Some(flag) => {
-        //         let occurred = flag.load(Ordering::SeqCst);
-        //         self.interrupts_enabled(pin) && occurred
-        //     }
-        //     None => unreachable!(),
-        // }
-        let mut res = false;
-        unsafe{
-        if(GPIO_INTERRUPTS[usize::from(pin)]==1){
-            res = true
+    //     let mut res = false;
+    //     unsafe{
+    //     if(GPIO_INTERRUPTS[usize::from(pin)]==1){
+    //         res = true
+    //     }
+    //     else{
+    //     res=false;
+    //     }
+    // };
+        self.update_flags();
+        match self.flags {
+            Some(flag) => {
+                let occurred = flag[pin].load(Ordering::SeqCst);
+                self.interrupts_enabled(pin) && occurred
+            }
+            None => unreachable!(),
         }
-        else{
-        res=false;
-    }
-};
-    res
+
+    //res
     }
 
     // TODO: decide functionality when no previous flag registered
     fn reset_interrupt_flag(&mut self, pin: GpioPin) {
-        // match self.flags[pin] {
-        //     Some(flag) => flag.store(false, Ordering::SeqCst),
-        //     None => unreachable!(),
-        // }
+        match self.flags {
+            Some(flags) => flags[pin].store(false, Ordering::SeqCst),
+            None => unreachable!(),
+        }
 
         unsafe{GPIO_INTERRUPTS[usize::from(pin)]==0;};
         //unsafe{GPIO_INTERRPUT_B = 0};
@@ -791,11 +843,14 @@ fn GPIOF(){
         // //let p = Peripherals::take().unwrap().PWM1;
         // p.enable
         //     .write(|w| unsafe { w.bits(p.enable.read().bits()  & !2 ) });
-    let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
-    let mut bits = p.data.read().bits();
-    bits ^= 0x02;
-    p.data.write(|w| unsafe { w.bits(bits) });
-    p.icr.write(|w| unsafe { w.bits(0x10) });
+  
+
+        //DEBUG
+    // let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
+    // let mut bits = p.data.read().bits();
+    // bits ^= 0x02;
+    // p.data.write(|w| unsafe { w.bits(bits) });
+    // p.icr.write(|w| unsafe { w.bits(0x10) });
     //let button = portb.pb3.into_pull_up_input(); 
     
     };

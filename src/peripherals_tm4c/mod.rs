@@ -17,9 +17,9 @@ pub type Peripheralstm4c<'s> = PeripheralSet<
     GpioStub,
     adc::AdcShim,
     pwm::PwmShim,
-    TimersStub,
-   // timers::TimersShim<'s>,
-    ClockStub,
+    //TimersStub,
+    timers::TimersShim<'s>,
+    clock::Tm4cClock,
     InputStub,
     OutputStub,
 >;

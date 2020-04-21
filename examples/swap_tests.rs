@@ -50,11 +50,12 @@ use lc3_tm4c::peripherals_tm4c::pwm::required_components as pwm_req;
 
 use lc3_tm4c::peripherals_tm4c::Peripheralstm4c;
 
-// use lc3_traits::peripherals::timers::{
-//     TimerArr, TimerId, TimerMiscError, TimerState, TimerStateMismatch, Timers,
-// };
-// use lc3_tm4c::peripherals_tm4c::timers;
-// use lc3_tm4c::peripherals_tm4c::timers::required_components as timer_req;
+
+use lc3_tm4c::peripherals_tm4c::timers;
+use lc3_tm4c::peripherals_tm4c::timers::required_components as timer_req;
+
+use lc3_tm4c::peripherals_tm4c::clock;
+use lc3_tm4c::peripherals_tm4c::clock::required_components as clock_req;
 
 use lc3_isa::{
     Addr, Instruction,
@@ -92,6 +93,7 @@ fn main() -> ! {
    // let mut porta = p.GPIO_PORTA.split(&sys.power_control);
   	let mut t0 = p.TIMER0;
  	let mut t1= p.TIMER1;
+    let mut t2= p.TIMER2;
     
 	let mut flash_unit = flash::tm4c_flash_unit{
 		flash_ctrl: flash,
@@ -1251,14 +1253,16 @@ swap_obj.write_primary(1541,0x0000);
         pwm1: pwm1,
     }, &sys.power_control);
 
+    let mut timer_shim = timers::TimersShim::new(&sys.power_control, timer_req{timer0: t0, timer1: t1});
 
+    let mut clock_req = clock::Tm4cClock::new(clock_req{timer: t2}, &sys.power_control);
     let x: PeripheralsStub;
     let peripherals = PeripheralSet::new(
         GpioStub,
         adc_shim,
         pwm_shim,
-        TimersStub,
-        ClockStub,
+        timer_shim,
+        clock_req,
         InputStub,
         OutputStub,
     );
@@ -1379,7 +1383,7 @@ swap_obj.write_primary(1541,0x0000);
         }
         a0 = interp.get_register(Reg::R0);
 
-        if (a0>200){
+        if (a0>180){
           interp.set_pc(12290);
           interp.set_register(Reg::R0, 0);
           interp.set_register(Reg::R1, 255);
@@ -1412,7 +1416,7 @@ swap_obj.write_primary(1541,0x0000);
         }
         a1 = interp.get_register(Reg::R0);
 
-        if (a1>=0){
+        if (a1>=180){
           interp.set_pc(12290);
           interp.set_register(Reg::R0, 1);
           interp.set_register(Reg::R1, 255);
