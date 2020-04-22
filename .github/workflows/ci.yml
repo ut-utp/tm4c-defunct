@@ -1,6 +1,6 @@
 on: [ push, pull_request ]
 
-name: assembler
+name: tm4c
 
 jobs:
   check:
@@ -9,13 +9,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        crate: [ assembler ]
+        crate: [ utp-tm4c ]
         os: [ windows-latest, ubuntu-latest, macOS-latest ]
         rust:
           - stable
           - beta
           - nightly
-          - 1.38.0
+          - 1.42.0
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        crate: [ lc3-baseline-sim ]
+        crate: [ utp-tm4c ]
         os: [ ubuntu-latest ]
         rust: [ stable, nightly ]
 
