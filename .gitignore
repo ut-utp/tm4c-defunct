@@ -13,6 +13,7 @@ log_files/
 
 ### GDB ###
 .gdb_history
+core
 
 ### IntelliJ and friends ###
 .idea
