@@ -17,3 +17,5 @@ load
 
 # start the process
 stepi
+
+source .gdbinit

@@ -3,7 +3,14 @@ runner = "gdb-multiarch -q -x .gdbconfig"
 
 rustflags = [
   "-C", "link-arg=-Tlink.x",
+  "-C", "force-frame-pointers=yes",
 ]
 
 [build]
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+# Notes:
+# call stack: cargo +nightly call-stack  --bin utp-tm4c | dot -Tpng > out.png
+# cargo +nightly -Z build-std=core run
+# (^ with force-frame-pointers=yes)
+# cargo +nightly stack-sizes --bin utp-tm4c --release
