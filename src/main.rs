@@ -45,8 +45,7 @@
 #![no_std]
 #![no_main]
 
-extern crate panic_halt;
-// extern crate panic_semihosting;
+extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
 use cortex_m_rt::entry;
@@ -72,19 +71,7 @@ use lc3_device_support::{
     util::Fifo,
 };
 
-use core::fmt::Write;
-
 static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
-
-// fn entry() -> ! { main() }
-
-#[inline(never)]
-fn foo(a: f32) -> f32 { (a * 2.0) % 203.43f32 }
-
-#[inline(never)]
-fn test() -> SimpleEventFutureSharedState {
-    SimpleEventFutureSharedState::new()
-}
 
 #[entry]
 fn main() -> ! {
@@ -119,18 +106,7 @@ fn main() -> ! {
         &sc.power_control,
     );
 
-    let (mut tx, mut rx) = uart.split();
-
-    // write!(tx, "zero");
     let state: SimpleEventFutureSharedState = SimpleEventFutureSharedState::new();
-
-    let state = test();
-    // write!(tx, "uno");
-
-    // let mut interp: Interpreter::<'static, PartialMemory, PeripheralsStub> = InterpreterBuilder::new()
-    //     // .with_interrupt_flags_by_ref(&FLAGS)
-    //     .with_defaults()
-    //     .build();
 
     let mut memory = PartialMemory::default();
 
@@ -144,15 +120,13 @@ fn main() -> ! {
 
     );
 
-    // write!(tx, "dos");
-
     let mut sim = Simulator::new_with_state(interp, &state);
 
     let func: &dyn Fn() -> Cobs<Fifo<u8>> = &|| Cobs::try_new(Fifo::new()).unwrap();
-
     let enc = PostcardEncode::<ResponseMessage, _, _>::new(func);
     let dec = PostcardDecode::<RequestMessage, Cobs<Fifo<u8>>>::new();
-    // let transport = UartTransport::new(rx, tx);
+
+    let (mut tx, mut rx) = uart.split();
 
     let mut device = Device::<UartTransport<_, _>, _, RequestMessage, ResponseMessage, _, _>::new(
         enc,
@@ -161,8 +135,4 @@ fn main() -> ! {
     );
 
     loop { device.step(&mut sim); }
-
-    // let mut a = 2.3f32;
-
-    // loop { a = foo(a); write!(tx, "hey: {}\n", a); write!(tx, "Hello\n"); sim.step(); }
 }
