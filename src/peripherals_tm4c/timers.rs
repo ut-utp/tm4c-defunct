@@ -6,7 +6,7 @@ use core::sync::atomic::AtomicBool;
 use tm4c123x_hal::{timer, timer::*, timer::Timer, time::*};
 use tm4c123x_hal::tm4c123x::{TIMER0, TIMER1};
 use core::marker::PhantomData;
-
+use core::sync::atomic::{ Ordering};
 use tm4c123x_hal::{Peripherals, prelude::*};
 use tm4c123x_hal::time::MegaHertz;
 use tm4c123x_hal::sysctl::Clocks;
@@ -30,7 +30,8 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
      states: TimerArr<TimerState>,
      times: TimerArr<Word>,
      modes: TimerArr<TimerMode>,
-     flags: TimerArr<Option<&'a AtomicBool>>,
+    //external_flags: Option<&'a TimerArr<AtomicBool>>,
+     flags: Option<&'a TimerArr<AtomicBool>>,
      clock_freq: u32,
  }
 
@@ -63,7 +64,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
              states: TimerArr([TimerState::Disabled; TimerId::NUM_TIMERS]),
              modes: TimerArr([TimerMode::SingleShot, TimerMode::SingleShot]),
              times: TimerArr([0u16; TimerId::NUM_TIMERS]), // unlike gpio, interrupts occur on time - not on bit change
-             flags: TimerArr([None; TimerId::NUM_TIMERS]),
+             flags: None,
              clock_freq: freq,
          }                
 
@@ -115,7 +116,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
              states: TimerArr([TimerState::Disabled; TimerId::NUM_TIMERS]),
              modes: TimerArr([TimerMode::SingleShot, TimerMode::SingleShot]),
              times: TimerArr([0u16; TimerId::NUM_TIMERS]), 
-             flags: TimerArr([None; TimerId::NUM_TIMERS]),
+             flags: None,
              clock_freq: 80_000_000,
          }
      }
@@ -240,12 +241,39 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
 
 
     fn register_interrupt_flags(&mut self, flags: &'a TimerArr<AtomicBool>){
-
+        self.flags = match self.flags {
+            None => Some(flags),
+            Some(_) => {
+                // warn!("re-registering interrupt flags!");
+                Some(flags)
+            }
+        };
          unsafe{TIMER_INTERRUPTS = [0; 2];};
     }
 
     fn interrupt_occurred(&self, timer: TimerId) -> bool {
+        unsafe{
+        for i in 0..2 {
+        if(TIMER_INTERRUPTS[i]==1){
+        match self.flags {
+            Some(flags) => {
+                match i {
+                    0 =>{
+                     flags[TimerId::T0].store(true, Ordering::SeqCst);
+                    }
+                    1 =>{
+                     flags[TimerId::T1].store(true, Ordering::SeqCst);
+                    }
+                    _=>{}
+                }
 
+               
+            }
+            None => unreachable!(),
+        }
+        }
+        }
+    };
         let mut res = false;
         unsafe{
         if(TIMER_INTERRUPTS[usize::from(timer)]==1){
@@ -259,7 +287,10 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
     }
 
     fn reset_interrupt_flag(&mut self, timer: TimerId) {
+        use Ordering::SeqCst;
 
+        self.flags.unwrap()[timer].store(false, SeqCst);
+        //self.internal_flags[timer].store(false, SeqCst);
          unsafe{TIMER_INTERRUPTS[usize::from(timer)]==0;};
     }
 
@@ -322,12 +353,12 @@ fn TIMER0A(){
 
     //DEBUG
 
-    let mut sc = &*tm4c123x::GPIO_PORTF::ptr();
-    let bits = sc.ris.read().bits();
-    let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
-    let mut bits = p.data.read().bits();
-    bits ^= 0x02;
-    p.data.write(|w| unsafe { w.bits(bits) });  
+    // let mut sc = &*tm4c123x::GPIO_PORTF::ptr();
+    // let bits = sc.ris.read().bits();
+    // let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
+    // let mut bits = p.data.read().bits();
+    // bits ^= 0x02;
+    // p.data.write(|w| unsafe { w.bits(bits) });  
 };
     unsafe{COUNT += 1};
 

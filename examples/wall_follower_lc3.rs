@@ -1383,216 +1383,46 @@ swap_obj.write_primary(1541,0x0000);
         }
         a0 = interp.get_register(Reg::R0);
 
-        if (a0<187){
+        if (a0>105){
           interp.set_pc(12290);
           interp.set_register(Reg::R0, 0);
           interp.set_register(Reg::R1, 255);
-          interp.set_register(Reg::R2, 90);
+          interp.set_register(Reg::R2, 125);
           while (interp.get_pc() != 12291){
           interp.step();
-         }    
-        }
-
-        else{
-          interp.set_pc(12290);
-          interp.set_register(Reg::R0, 0);
-          interp.set_register(Reg::R1, 255);
-          interp.set_register(Reg::R2, 1);
-          while (interp.get_pc() != 12291){
-          interp.step();
-         }    
-        }
-
-        interp.set_pc(12288);
-         interp.set_register(Reg::R0, 1);
-        while (interp.get_pc() != 12289){
-          interp.step();
-          pc = interp.get_pc();
-        }  
-        interp.set_pc(12289);
-        interp.set_register(Reg::R0, 1);
-        while (interp.get_pc() != 12290){
-          interp.step();
-        }
-        a1 = interp.get_register(Reg::R0);
-
-        if (a1<187){
+         }
           interp.set_pc(12290);
           interp.set_register(Reg::R0, 1);
           interp.set_register(Reg::R1, 255);
-          interp.set_register(Reg::R2, 90);
+          interp.set_register(Reg::R2, 125);
           while (interp.get_pc() != 12291){
           interp.step();
-         }    
+         }      
         }
 
         else{
           interp.set_pc(12290);
           interp.set_register(Reg::R0, 1);
           interp.set_register(Reg::R1, 255);
-          interp.set_register(Reg::R2, 1);
+          interp.set_register(Reg::R2, 125);
           while (interp.get_pc() != 12291){
           interp.step();
          }   
+          interp.set_pc(12290);
+          interp.set_register(Reg::R0, 0);
+          interp.set_register(Reg::R1, 255);
+          interp.set_register(Reg::R2, 1);
+          while (interp.get_pc() != 12291){
+          interp.step();
+         }  
         }
-
-
-
-        // while (interp.get_pc() != 12290){
-        //   interp.step();
-        // }     
-
-
-        // while (interp.get_pc() != 12290){
-        //   interp.step();
-        // }     
-
-
-        // while (interp.get_pc() != 12290){
-        //   interp.step();
-        // }     
-        
-
-
-
-       // interp.set_register(Reg::R1, 0);
 
 
      }
 
-        // while (interp.get_pc() != 12294){
-        //   pc = interp.get_pc();
-        //   while (interp.get_pc()!= (pc+1)) {
-        //     interp.step();
-        //   }
-        //   out = interp.get_register(Reg::R0);
-        //   let x = 1;
-
-        // }
-
-        // loop{}
-      //  while (interp.get_pc() != 12305){
-      //  pc = interp.get_pc();
-
-        
-      // 	interp.step();
-      //   if(pc == 12294){
-
-            
-      //       interp.set_pc(12293);
-      //       out = interp.get_register(Reg::R0);
-      //       //writeln!(uart, "Hello, world! adc={}", out).unwrap();
-      //       interp.step();
-
-          
-      //   }
-
-      // }
-
-      // loop{}
-      // let x = 5;
-      // while (interp.get_pc() != 0x3000){
-      //  pc = interp.get_pc();
-      //  let word = interp.get_word(pc).unwrap();
-      // 	interp.step();
-
-      // }
-     
-     
-
-        // interp.set_word(0x3001, 1021);
-
-        // interp.step();
-    //let tot_free_secs = swap_obj.get_total_free_sectors();
-    //swap_obj.read_swap(0x0000);
-    // let mut u0 = p.UART0;
-    // let mut u1 = p.UART1;
-    // let mut porta = p.GPIO_PORTA.split(&sys.power_control);
-    // let mut uart = hal::serial::Serial::uart0(
-    //     u0,
-    //     porta
-    //         .pa1
-    //         .into_af_push_pull::<hal::gpio::AF1>(&mut porta.control),
-    //     porta
-    //         .pa0
-    //         .into_af_push_pull::<hal::gpio::AF1>(&mut porta.control),
-    //     (),
-    //     (),
-    //     9_600_u32.bps(),
-    //     hal::serial::NewlineMode::SwapLFtoCRLF,
-    //     &clocks,
-    //     &sys.power_control,
-    // );
      
     loop{
-     // 	for i in 0..2 {
-    	// let out = swap_obj.write_primary(i, 4);
-    	// match out{
-    	// 	Ok(()) => {
-    	// 		writeln!(uart,"Write success");
-
-    	// 	},
-    	// 	_=>{
-    	// 		let y=5;
-    	// 	}
-    	// }
-     // }
-
-    	// for i in 0..2 {
-    	// let out = swap_obj.read_primary(i);
-    	// match out{
-    	// 	Ok(word) => {
-    	// 		writeln!(uart,"{}", word);
-
-    	// 	},
-    	// 	_=>{
-    	// 		let y=5;
-    	// 	}
-    	// }
-     // }
-     // writeln!(uart,"HELLO!");
-       //    for i in 0..100 {
-       //       let data_bytes: [usize; 128] = [100usize; 128];
-       //       flash_unit.Flash_ProgramData(0x00008000 + 512*i, data_bytes);  
-       //   }
-         
  
-
-   
-
-       //  for addr in (0x00008000..(0x00008000 + (512*100 as usize))).step_by(4) {
-       //      let mut x = addr;
-       //      let mut data = unsafe {read_volatile(x as (*const u32))};
-       //      //writeln!(uart, "{}: [{:#x}] =  {:#x}", addr, addr, data);
-       //      if(data!=100){
-       //          loop{}
-       //      }
-       //      //data = data+1;
-            
-       // }
-       // for i in 0u32..65536u32 {
-
-       // 	let x = i as u16;
-       // swap_obj.write_primary(x, x);
-
-
-       // }
-
-       // for i in 0u32..65536u32 {
-       // 	let x = i as u16;
-       // let out = swap_obj.read_primary(x);
-       // match out{
-       // 	Ok(out)=>{
-       // 		let x = out;
-       // 		if(x as u32 != i){
-       // 			loop{}
-       // 		}
-       // 	}
-       // 	_=>{
-       // 		loop{}
-       // 	}
-       // }
-       // }
 
        let came_here = 1;
 
