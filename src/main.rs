@@ -8,15 +8,12 @@
     const_err,
     dead_code,
     improper_ctypes,
-    legacy_directory_ownership,
     non_shorthand_field_patterns,
     no_mangle_generic_items,
     overflowing_literals,
     path_statements,
     patterns_in_fns_without_body,
-    plugin_as_library,
     private_in_public,
-    safe_extern_statics,
     unconditional_recursion,
     unused,
     unused_allocation,
@@ -55,13 +52,16 @@ use lc3_traits::control::rpc::{
     SimpleEventFutureSharedState, Device, RequestMessage, ResponseMessage
 };
 use lc3_baseline_sim::interp::{
-    Interpreter, InstructionInterpreter, InterpreterBuilder,
+    Interpreter,
     PeripheralInterruptFlags, OwnedOrRef, MachineState,
 };
 use lc3_baseline_sim::sim::Simulator;
-use lc3_traits::peripherals::{PeripheralSet, stubs::PeripheralsStub};
-use lc3_traits::memory::MemoryStub;
-use lc3_traits::control::Control;
+use lc3_traits::peripherals::{
+    PeripheralSet,
+    stubs::{
+        /*PeripheralsStub,*/ InputStub, OutputStub
+    },
+};
 use lc3_device_support::{
     memory::PartialMemory,
     rpc::{
@@ -71,7 +71,46 @@ use lc3_device_support::{
     util::Fifo,
 };
 
+// use hal::{gpio::*, gpio::gpioe::*};
+use lc3_tm4c::peripherals_tm4c::{
+    gpio::{
+        required_components as GpioComponents,
+        physical_pins as Tm4cGpio,
+        // GpioShim exists but it's not used for anything and doesn't impl Gpio?
+    },
+    adc::{
+        required_components as AdcComponents,
+        AdcShim as Tm4cAdc,
+    },
+    pwm::{
+        required_components as PwmComponents,
+        PwmShim as Tm4cPwm,
+    },
+    timers::{
+        required_components as TimerComponents,
+        TimersShim as Tm4cTimers,
+    },
+    clock::{
+        required_components as ClockComponents,
+        Tm4cClock,
+    },
+};
+
+// Unforuntately, this type alias is incomplete.
+// use lc3_tm4c::peripherals_tm4c::Peripheralstm4c;
+
 static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
+
+type Tm4cPeripheralSet<'int> = PeripheralSet<
+    'int,
+    Tm4cGpio<'int>,
+    Tm4cAdc,
+    Tm4cPwm,
+    Tm4cTimers<'int>,
+    Tm4cClock,
+    InputStub,
+    OutputStub,
+>;
 
 #[entry]
 fn main() -> ! {
@@ -87,6 +126,81 @@ fn main() -> ! {
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
     let mut u0 = p.UART0;
+
+    // Peripheral Init:
+    let peripheral_set = {
+        let portf = p.GPIO_PORTF;
+        let portb = p.GPIO_PORTB;
+        let gpio = Tm4cGpio::new(
+            &sc.power_control,
+            GpioComponents {
+                portf,
+                portb,
+            }
+        );
+
+        let adc0 = p.ADC0;
+        let adc1 = p.ADC1;
+        let porte = p.GPIO_PORTE;
+        let adc = Tm4cAdc::new(
+            &sc.power_control,
+            AdcComponents {
+                adc0,
+                adc1,
+                porte,
+            }
+        );
+
+        // All the peripheral impls are currently written so that they take the
+        // entire port even when they only use a few pins from the port... This
+        // is not good and it means we have to completely unnecessarily use
+        // unsafe here to get another copy of port B.
+        //
+        // This is bad because we're forfeiting compile time checking that we
+        // don't try to use the same pins for PWM and GPIO *for absolutely no
+        // reason*.
+        let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
+        let portd = p.GPIO_PORTD;
+        let pwm0 = p.PWM0;
+        let pwm1 = p.PWM1;
+        let pwm = Tm4cPwm::new(
+            PwmComponents {
+                portb,
+                portd,
+                pwm0,
+                pwm1,
+            },
+            &sc.power_control,
+        );
+
+        let timer0 = p.TIMER0;
+        let timer1 = p.TIMER1;
+        let timers = Tm4cTimers::new(
+            &sc.power_control,
+            TimerComponents {
+                timer0,
+                timer1,
+            }
+        );
+
+        let timer = p.TIMER2;
+        let clock = Tm4cClock::new(
+            ClockComponents {
+                timer,
+            },
+            &sc.power_control,
+        );
+
+        PeripheralSet::new(
+            gpio,
+            adc,
+            pwm,
+            timers,
+            clock,
+            InputStub,
+            OutputStub,
+        )
+    };
 
     // Activate UART
     let uart = hal::serial::Serial::uart0(
@@ -110,9 +224,9 @@ fn main() -> ! {
 
     let mut memory = PartialMemory::default();
 
-    let mut interp: Interpreter<'static, _, PeripheralsStub> = Interpreter::new(
+    let mut interp: Interpreter<'static, _, Tm4cPeripheralSet<'_>> = Interpreter::new(
         &mut memory,
-        PeripheralsStub::default(),
+        peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
         [0; 8],
         0x200,

@@ -2,12 +2,6 @@
 # It is not intended for manual editing.
 [[package]]
 name = "aligned"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d39da9b88ae1a81c03c9c082b8db83f1d0e93914126041962af61034ab44c4a5"
-
-[[package]]
-name = "aligned"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb1ce8b3382016136ab1d31a1b5ce807144f8b7eb2d5f16b2108f0f07edceb94"
@@ -58,35 +52,13 @@ checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
 
 [[package]]
 name = "cortex-m"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c0b159a1e8306949579de3698c841dba58058197b65c60807194e4fa1e7a554"
-dependencies = [
- "aligned 0.2.0",
- "bare-metal",
- "cortex-m 0.6.2",
- "volatile-register",
-]
-
-[[package]]
-name = "cortex-m"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2954942fbbdd49996704e6f048ce57567c3e1a4e2dc59b41ae9fde06a01fc763"
 dependencies = [
- "aligned 0.3.2",
+ "aligned",
  "bare-metal",
  "volatile-register",
-]
-
-[[package]]
-name = "cortex-m-rt"
-version = "0.5.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09fd585ab79330179866e2fdb18ad1083dada4244a72df81ecf63f012aa4f86f"
-dependencies = [
- "cortex-m-rt 0.6.12",
- "r0",
 ]
 
 [[package]]
@@ -116,7 +88,7 @@ version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "113ef0ecffee2b62b58f9380f4469099b30e9f9cbee2804771b4203ba1762cfa"
 dependencies = [
- "cortex-m 0.6.2",
+ "cortex-m",
 ]
 
 [[package]]
@@ -172,7 +144,7 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -183,7 +155,7 @@ dependencies = [
 [[package]]
 name = "lc3-device-support"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
 dependencies = [
  "embedded-hal",
  "lc3-isa",
@@ -197,7 +169,7 @@ dependencies = [
 [[package]]
 name = "lc3-isa"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
 dependencies = [
  "lc3-macros",
  "serde",
@@ -207,7 +179,7 @@ dependencies = [
 [[package]]
 name = "lc3-macros"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -215,9 +187,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "lc3-tm4c"
+version = "0.1.0"
+source = "git+https://github.com/ut-utp/tm4c?branch=feat-non-generic#40a37bff3aa7252074af318a080a05d38fc9e737"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "cortex-m-rt-macros",
+ "cortex-m-semihosting",
+ "embedded-hal",
+ "lc3-baseline-sim",
+ "lc3-isa",
+ "lc3-traits",
+ "nb",
+ "panic-halt",
+ "tm4c123x",
+ "tm4c123x-hal",
+]
+
+[[package]]
 name = "lc3-traits"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#314434d696afb2c46db676c8d336851f4a91e86f"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -346,9 +337,9 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "syn"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0df0eb663f387145cab623dea85b09c2c5b4b0aef44e945d928e682fce71bb03"
+checksum = "410a7488c0a728c7ceb4ad59b9567eb4053d02e8cc7f5c0e0eeeb39518369213"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -357,25 +348,13 @@ dependencies = [
 
 [[package]]
 name = "tm4c-hal"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b28109f8bbbd2d9e7b6ae754b04a65d98ded59a1d09d798143ae98d49ed6ccf"
+version = "0.3.0"
+source = "git+https://github.com/ut-utp/tm4c-hal?rev=f4f7487202c7b777c6d2092cd6504f8d4c638ede#f4f7487202c7b777c6d2092cd6504f8d4c638ede"
 dependencies = [
  "cast",
- "cortex-m 0.5.10",
+ "cortex-m",
  "embedded-hal",
-]
-
-[[package]]
-name = "tm4c123x"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f6114a65473bec0adad0ffb908c2f86e6675201b5e8daf78127743646d5c9bf"
-dependencies = [
- "bare-metal",
- "cortex-m 0.5.10",
- "cortex-m-rt 0.5.7",
- "vcell",
+ "nb",
 ]
 
 [[package]]
@@ -385,22 +364,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "097e7f60cc69f25d9bd189509c682b36057fd5f1519e6485b107aecca15c3e3f"
 dependencies = [
  "bare-metal",
- "cortex-m 0.6.2",
+ "cortex-m",
+ "cortex-m-rt",
  "vcell",
 ]
 
 [[package]]
 name = "tm4c123x-hal"
-version = "0.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d15c0e808df52765d207fd834e0a1e6322c62fdf9cd901d3bbca5ed3a171273"
+version = "0.10.0"
+source = "git+https://github.com/ut-utp/tm4c-hal?rev=f4f7487202c7b777c6d2092cd6504f8d4c638ede#f4f7487202c7b777c6d2092cd6504f8d4c638ede"
 dependencies = [
  "cast",
- "cortex-m 0.5.10",
+ "cortex-m",
  "embedded-hal",
  "nb",
  "tm4c-hal",
- "tm4c123x 0.7.0",
+ "tm4c123x",
  "void",
 ]
 
@@ -420,15 +399,16 @@ checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 name = "utp-tm4c"
 version = "0.1.0"
 dependencies = [
- "cortex-m-rt 0.6.12",
+ "cortex-m-rt",
  "cortex-m-semihosting",
  "embedded-hal",
  "lc3-baseline-sim",
  "lc3-device-support",
  "lc3-isa",
+ "lc3-tm4c",
  "lc3-traits",
  "panic-halt",
- "tm4c123x 0.9.0",
+ "tm4c123x",
  "tm4c123x-hal",
 ]
 
