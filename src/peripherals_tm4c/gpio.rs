@@ -364,12 +364,12 @@ impl physical_pins<'_> {
 
 
         if(disabled_flag == 1){
-            Some(())
+            self.states[pin] = State::Output(false);
+
         }
 
 
-        else{
-
+      //  else{
 
         match self[pin] {
             _ => {
@@ -416,8 +416,13 @@ impl physical_pins<'_> {
             // Input(_) | Disabled => return None,
         };
 
+        if(disabled_flag == 1){
+            self.states[pin] = State::Disabled;
+
+        }
+
         Some(())
-    }
+  //  }
     }
 
     fn raise_interrupt(&self, pin: GpioPin) {
