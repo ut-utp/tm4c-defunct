@@ -140,6 +140,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
                     t1.tamr.write(|w| unsafe{w.bits(1)});
                     }
                 }
+                self.modes[timer] = TimerMode::SingleShot;
 
             }  
 
@@ -155,7 +156,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
                     t1.tamr.write(|w| unsafe{w.bits(2)});
                     }
                 }
-                self.modes[timer] = 
+                self.modes[timer] = TimerMode::Repeated;
 
             }
         }     
