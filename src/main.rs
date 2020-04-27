@@ -63,7 +63,7 @@ use lc3_traits::peripherals::{
     },
 };
 use lc3_device_support::{
-    memory::PartialMemory,
+    /*memory::PartialMemory,*/
     rpc::{
         transport::uart_simple::UartTransport,
         encoding::{PostcardEncode, PostcardDecode, Cobs},
@@ -95,6 +95,28 @@ use lc3_tm4c::peripherals_tm4c::{
         Tm4cClock,
     },
 };
+
+use lc3_tm4c::{
+    peripherals_tm4c::{
+        flash::{
+            tm4c_flash_unit as Tm4cFlashUnit,
+        }
+    },
+    paging_impl::{
+        tm4c_flash_paging_config::Tm4c_flash_page_unit_for_lc3 as Tm4cFlashPageUnit,
+    },
+    memory_impl::tm4c_memory_impl::{
+        tm4c_lc3_memory as Tm4cMemory,
+    }
+};
+
+use lc3_tm4c::persistent_data_management::page::Paging;
+use lc3_tm4c::paging_impl::tm4c_flash_paging_config::*;
+use lc3_tm4c::paging_impl::tm4c_flash_paging_config;
+use lc3_tm4c::peripherals_tm4c::flash;
+use lc3_tm4c::peripherals_tm4c::flash::*;
+
+use lc3_tm4c::memory_impl::tm4c_memory_impl::*;
 
 // Unforuntately, this type alias is incomplete.
 // use lc3_tm4c::peripherals_tm4c::Peripheralstm4c;
@@ -202,6 +224,15 @@ fn main() -> ! {
         )
     };
 
+    // Memory Init:
+    let memory = {
+        let flash_ctrl = p.FLASH_CTRL;
+
+        Tm4cMemory {
+            tm4c_mem_obj: Tm4cFlashPageUnit::new(Tm4cFlashUnit { flash_ctrl }),
+        }
+    };
+
     // Activate UART
     let uart = hal::serial::Serial::uart0(
         u0,
@@ -222,10 +253,8 @@ fn main() -> ! {
 
     let state: SimpleEventFutureSharedState = SimpleEventFutureSharedState::new();
 
-    let mut memory = PartialMemory::default();
-
     let mut interp: Interpreter<'static, _, Tm4cPeripheralSet<'_>> = Interpreter::new(
-        &mut memory,
+        memory,
         peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
         [0; 8],
