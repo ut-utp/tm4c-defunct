@@ -351,7 +351,26 @@ impl physical_pins<'_> {
             };
 
 
-        }       
+        }
+
+          let mut disabled_flag = 0;
+          match self.states[pin] {
+            State::Disabled =>{
+                disabled_flag = 1;
+            },
+            _=>{},
+
+          } ;    
+
+
+        if(disabled_flag == 1){
+            Some(())
+        }
+
+
+        else{
+
+
         match self[pin] {
             _ => {
                 self[pin] = Output(bit);
@@ -398,6 +417,7 @@ impl physical_pins<'_> {
         };
 
         Some(())
+    }
     }
 
     fn raise_interrupt(&self, pin: GpioPin) {
@@ -472,6 +492,8 @@ impl physical_pins<'_> {
 impl<'a> Gpio<'a> for physical_pins<'a> {
     fn set_state(&mut self, pin: GpioPin, state: GpioState) -> Result<(), GpioMiscError> {
         use GpioState::*;
+
+
         macro_rules! set_state_input {
             ($ pin : expr, $resp:path) => {
                         let mut handle = {
@@ -536,6 +558,9 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
 
 
         }
+
+
+
         match state {
             Input => {
                 self[pin] = State::Input(false);
@@ -731,7 +756,10 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                 }
 
             },
-            Disabled => self[pin] = State::Disabled,
+            Disabled => {
+                self[pin] = State::Disabled;
+                self.set_pin(pin, false);
+            },
         };
 
         Ok(())
