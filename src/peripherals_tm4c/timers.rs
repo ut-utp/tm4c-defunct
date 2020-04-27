@@ -155,6 +155,8 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
                     t1.tamr.write(|w| unsafe{w.bits(2)});
                     }
                 }
+                self.modes[timer] = 
+
             }
         }     
 
@@ -220,7 +222,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
                            t1.tav.write(|w| unsafe {  w.bits(period.get().into()) });
                            let per: u32 = period.get().into();
 
-                           Peripherals::take().unwrap().TIMER1.tailr.write(|w| unsafe { w.bits(per*80000) });
+                           t1.tailr.write(|w| unsafe { w.bits(per*80000) });
                             t1.ctl.modify(|_, w|
                                 w.taen().set_bit());
               
@@ -291,7 +293,7 @@ static mut TIMER_INTERRUPTS: [u8; 2] = [0; 2];
 
         self.flags.unwrap()[timer].store(false, SeqCst);
         //self.internal_flags[timer].store(false, SeqCst);
-         unsafe{TIMER_INTERRUPTS[usize::from(timer)]==0;};
+         unsafe{TIMER_INTERRUPTS[usize::from(timer)]=0;};
     }
 
     fn interrupts_enabled(&self, timer: TimerId) -> bool {
