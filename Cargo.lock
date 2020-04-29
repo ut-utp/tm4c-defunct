@@ -144,7 +144,7 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -155,7 +155,7 @@ dependencies = [
 [[package]]
 name = "lc3-device-support"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "embedded-hal",
  "lc3-isa",
@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "lc3-isa"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-macros",
  "serde",
@@ -179,7 +179,7 @@ dependencies = [
 [[package]]
 name = "lc3-macros"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "lc3-traits"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
