@@ -871,15 +871,15 @@ fn GPIOF(){
         let bits = sc.ris.read().bits();
 
         let trail_zeros = bits.trailing_zeros();
-        if(bits && 0x02 == 0x02){
+        if(bits & 0x02 == 0x02){
         GPIO_INTERRUPTS[0] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x02)}); 
         }  
-        if(bits && 0x04 == 0x04){
+        if(bits & 0x04 == 0x04){
         GPIO_INTERRUPTS[1] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x04)}); 
         } 
-        if(bits && 0x10 == 0x10){
+        if(bits & 0x10 == 0x10){
         GPIO_INTERRUPTS[2] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x10)}); 
         } 
@@ -913,31 +913,26 @@ fn GPIOB(){
         let bits = sc.ris.read().bits();
 
         let trail_zeros = bits.trailing_zeros();
-        if(bits && 0x01 == 0x01){
+        if((bits & 0x01) == 0x01){
         GPIO_INTERRUPTS[3] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x01)}); 
         }  
-        if(bits && 0x02 == 0x02){
+        if(bits & 0x02 == 0x02){
         GPIO_INTERRUPTS[4] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x02)}); 
         } 
-        if(bits && 0x04 == 0x04){
+        if(bits & 0x04 == 0x04){
         GPIO_INTERRUPTS[5] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x04)}); 
         } 
-        if(bits && 0x08 == 0x08){
+        if(bits & 0x08 == 0x08){
         GPIO_INTERRUPTS[6] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x08)}); 
         }  
-        if(bits && 0x10 == 0x10){
+        if(bits & 0x10 == 0x10){
         GPIO_INTERRUPTS[7] = 1;
         sc.icr.write(|w| unsafe{w.bits(0x10)}); 
         } 
-
-        //sc.icr.write(|w| unsafe{w.bits(1)});   
-        if(trail_zeros <= 7){     
-        GPIO_INTERRUPTS[trail_zeros as usize] = 1;
-       }
 
     };
 }
