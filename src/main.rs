@@ -169,8 +169,8 @@ fn main() -> ! {
         let pwm1 = p.PWM1;
         let pwm = Tm4cPwm::new(
             PwmComponents {
-                pb6: portb.pb6.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
-                pb7: portb.pb7.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
+                pb6: portb.pb6.into_af_push_pull::<hal::gpio::AF4>(&mut portb.control),
+                pb7: portb.pb7.into_af_push_pull::<hal::gpio::AF4>(&mut portb.control),
                 pwm0,
                 pwm1,
             },
