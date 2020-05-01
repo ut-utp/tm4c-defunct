@@ -35,8 +35,16 @@ pub enum State {
 }
 
 pub struct required_components {
-    pub portf: tm4c123x::GPIO_PORTF,
-    pub portb: tm4c123x::GPIO_PORTB,
+    // pub portf: tm4c123x::GPIO_PORTF,
+    // pub portb: tm4c123x::GPIO_PORTB,
+    pub pf1: PF1<Output<PushPull>>,
+    pub pf2: PF2<Output<PushPull>>,
+    pub pf4: PF4<Output<PushPull>>,
+    pub pb0: PB0<Output<PushPull>>,
+    pub pb1: PB1<Input<PullUp>>,
+    pub pb2: PB2<Input<PullUp>>,
+    pub pb3: PB3<Input<PullUp>>,
+    pub pb4: PB4<Input<PullUp>>,
 }
 
 impl From<State> for GpioState {
@@ -56,11 +64,11 @@ enum physical_pin_mappings {
     GPIO0(PF1<Output<PushPull>>),
     GPIO1(PF2<Output<PushPull>>),
     GPIO2(PF4<Output<PushPull>>),
-    GPIO3(PB3<Output<PushPull>>),
-    GPIO4(PB4<Input<PullUp>>),
-    GPIO5(PB5<Input<PullUp>>),
-    GPIO6(PB6<Input<PullUp>>),
-    GPIO7(PB7<Input<PullUp>>),
+    GPIO3(PB0<Output<PushPull>>),
+    GPIO4(PB1<Input<PullUp>>),
+    GPIO5(PB2<Input<PullUp>>),
+    GPIO6(PB3<Input<PullUp>>),
+    GPIO7(PB4<Input<PullUp>>),
 }
 
 pub struct mapping<T>(pub [T; GpioPin::NUM_PINS]);
@@ -80,11 +88,11 @@ pub enum PhysicalPins {
     g0(State2<PF1<Input<PullUp>>, PF1<Output<PushPull>>>),
     g1(State2<PF2<Input<PullUp>>, PF2<Output<PushPull>>>),
     g2(State2<PF4<Input<PullUp>>, PF4<Output<PushPull>>>),
-    g3(State2<PB3<Input<PullUp>>, PB3<Output<PushPull>>>),
-    g4(State2<PB4<Input<PullUp>>, PB4<Output<PushPull>>>),
-    g5(State2<PB5<Input<PullUp>>, PB5<Output<PushPull>>>),
-    g6(State2<PB6<Input<PullUp>>, PB6<Output<PushPull>>>),
-    g7(State2<PB7<Input<PullUp>>, PB7<Output<PushPull>>>),
+    g3(State2<PB0<Input<PullUp>>, PB0<Output<PushPull>>>),
+    g4(State2<PB1<Input<PullUp>>, PB1<Output<PushPull>>>),
+    g5(State2<PB2<Input<PullUp>>, PB2<Output<PushPull>>>),
+    g6(State2<PB3<Input<PullUp>>, PB3<Output<PushPull>>>),
+    g7(State2<PB4<Input<PullUp>>, PB4<Output<PushPull>>>),
 }
 
 pub struct physical_pins<'a> {
@@ -96,79 +104,80 @@ pub struct physical_pins<'a> {
 }
 impl Default for physical_pins<'_> {
     fn default() -> Self {
-        let mut states_init = [
-            State::Output(false),
-            State::Output(false),
-            State::Output(false),
-            State::Output(false),
-            State::Input(false),
-            State::Input(false),
-            State::Input(false),
-            State::Input(false),
-        ];
-        //   let p =  hal::Peripherals::take().unwrap();
-        //   let mut sc = p.SYSCTL.constrain();
-        //   let mut portb = p.GPIO_PORTF.split(&sc.power_control);
-        // //  //let timer_output_pin = portb.pb0.into_af_push_pull::<gpio::AF7>(&mut portb.control);
-        // // // let uart_tx_pin = portb.pb1.into_af_open_drain::<gpio::AF1, gpio::PullUp>(&mut portb.control);
-        //   let mut blue_led = portb.pf2.into_push_pull_output();
-        //   blue_led.set_high();
+        unimplemented!()
+        // let mut states_init = [
+        //     State::Output(false),
+        //     State::Output(false),
+        //     State::Output(false),
+        //     State::Output(false),
+        //     State::Input(false),
+        //     State::Input(false),
+        //     State::Input(false),
+        //     State::Input(false),
+        // ];
+        // //   let p =  hal::Peripherals::take().unwrap();
+        // //   let mut sc = p.SYSCTL.constrain();
+        // //   let mut portb = p.GPIO_PORTF.split(&sc.power_control);
+        // // //  //let timer_output_pin = portb.pb0.into_af_push_pull::<gpio::AF7>(&mut portb.control);
+        // // // // let uart_tx_pin = portb.pb1.into_af_open_drain::<gpio::AF1, gpio::PullUp>(&mut portb.control);
+        // //   let mut blue_led = portb.pf2.into_push_pull_output();
+        // //   blue_led.set_high();
 
-        let p_st = Peripherals::take().unwrap();
-        let mut sc = p_st.SYSCTL.constrain();
-        let mut portf = p_st.GPIO_PORTF.split(&sc.power_control);
-        let mut gpiof1 = portf.pf1.into_push_pull_output();
-        gpiof1.set_low();
-        let mut gpiof2 = portf.pf2.into_push_pull_output();
-        gpiof2.set_high();
-        let mut gpiof4 = portf.pf4.into_push_pull_output();
-        gpiof4.set_low();
-        // let mut gpioa3 = porta.pf4.into_push_pull_output();
-        // gpioa3.set_low();
+        // let p_st = Peripherals::take().unwrap();
+        // let mut sc = p_st.SYSCTL.constrain();
+        // let mut portf = p_st.GPIO_PORTF.split(&sc.power_control);
+        // let mut gpiof1 = portf.pf1.into_push_pull_output();
+        // gpiof1.set_low();
+        // let mut gpiof2 = portf.pf2.into_push_pull_output();
+        // gpiof2.set_high();
+        // let mut gpiof4 = portf.pf4.into_push_pull_output();
+        // gpiof4.set_low();
+        // // let mut gpioa3 = porta.pf4.into_push_pull_output();
+        // // gpioa3.set_low();
 
-        let mut portb = p_st.GPIO_PORTB.split(&sc.power_control);
-        let mut gpiob3 = portb.pb3.into_push_pull_output();
-        //   gpioe0.set_low();            //input - no init state
-        let mut gpiob4 = portb.pb4.into_pull_up_input();
-        //  gpioe1.set_low();
-        let mut gpiob5 = portb.pb5.into_pull_up_input();
-        //  gpioe2.set_low();
-        let mut gpiob6 = portb.pb6.into_pull_up_input();
+        // let mut portb = p_st.GPIO_PORTB.split(&sc.power_control);
+        // let mut gpiob0 = portb.pb0.into_push_pull_output();
+        // //   gpioe0.set_low();            //input - no init state
+        // let mut gpiob1 = portb.pb1.into_pull_up_input();
+        // //  gpioe1.set_low();
+        // let mut gpiob2 = portb.pb2.into_pull_up_input();
+        // //  gpioe2.set_low();
+        // let mut gpiob3 = portb.pb3.into_pull_up_input();
 
-        let mut gpiob7 = portb.pb7.into_pull_up_input();
+        // let mut gpiob4 = portb.pb4.into_pull_up_input();
 
-        Self {
-            states: GpioPinArr(states_init),
-            flags: None,
-            //mapping: [],
-            mapping2: ([
-                PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
-                    gpiof1,
-                )),
-                PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
-                    gpiof2,
-                )),
-                PhysicalPins::g2(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
-                    gpiof4,
-                )),
-                PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
-                    gpiob3,
-                )),
-                PhysicalPins::g4(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
-                    gpiob4,
-                )),
-                PhysicalPins::g5(State2::<PB5<Input<PullUp>>, PB5<Output<PushPull>>>::Input(
-                    gpiob5,
-                )),
-                PhysicalPins::g6(State2::<PB6<Input<PullUp>>, PB6<Output<PushPull>>>::Input(
-                    gpiob6,
-                )),
-                PhysicalPins::g7(State2::<PB7<Input<PullUp>>, PB7<Output<PushPull>>>::Input(
-                    gpiob7,
-                )),
-            ]),
-            Peripheral_set: None,
-        }
+        // Self {
+        //     states: GpioPinArr(states_init),
+        //     flags: None,
+        //     //mapping: [],
+        //     mapping2: ([
+        //         PhysicalPins::g0(State2::<PF1<Input<PullUp>>, PF1<Output<PushPull>>>::Output(
+        //             gpiof1,
+        //         )),
+        //         PhysicalPins::g1(State2::<PF2<Input<PullUp>>, PF2<Output<PushPull>>>::Output(
+        //             gpiof2,
+        //         )),
+        //         PhysicalPins::g2(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
+        //             gpiof4,
+        //         )),
+        //         PhysicalPins::g3(State2::<PB0<Input<PullUp>>, PB0<Output<PushPull>>>::Output(
+        //             gpiob0,
+        //         )),
+        //         PhysicalPins::g4(State2::<PB1<Input<PullUp>>, PB1<Output<PushPull>>>::Input(
+        //             gpiob1,
+        //         )),
+        //         PhysicalPins::g5(State2::<PB2<Input<PullUp>>, PB2<Output<PushPull>>>::Input(
+        //             gpiob2,
+        //         )),
+        //         PhysicalPins::g6(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Input(
+        //             gpiob3,
+        //         )),
+        //         PhysicalPins::g7(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
+        //             gpiob4,
+        //         )),
+        //     ]),
+        //     Peripheral_set: None,
+        // }
     }
 }
 
@@ -196,26 +205,26 @@ impl physical_pins<'_> {
         };
         //let mut sc = sys_init();
         // let x = p_st.GPIO_PORTA;
-        let mut portf = p_st.portf.split(power);
-        let mut gpiof1 = portf.pf1.into_push_pull_output();
+        //let mut portf = p_st.portf.split(power);
+        let mut gpiof1 = p_st.pf1;
         gpiof1.set_low();
-        let mut gpiof2 = portf.pf2.into_push_pull_output();
+        let mut gpiof2 = p_st.pf2;
         gpiof2.set_low();
-        let mut gpiof4 = portf.pf4.into_push_pull_output();
+        let mut gpiof4 = p_st.pf4;
         gpiof4.set_low();
         // let mut gpioa3 = porta.pf4.into_push_pull_output();
         // gpioa3.set_low();
 
-        let mut portb = p_st.portb.split(power);
-        let mut gpiob3 = portb.pb3.into_push_pull_output();
+        //let mut portb = p_st.portb.split(power);
+        let mut gpiob0 = p_st.pb0;//.into_push_pull_output();
         //   gpioe0.set_low();            //input - no init state
-        let mut gpiob4 = portb.pb4.into_pull_up_input();
+        let mut gpiob1 = p_st.pb1;
         //  gpioe1.set_low();
-        let mut gpiob5 = portb.pb5.into_pull_up_input();
+        let mut gpiob2 = p_st.pb2;
         //  gpioe2.set_low();
-        let mut gpiob6 = portb.pb6.into_pull_up_input();
+        let mut gpiob3 = p_st.pb3;
 
-        let mut gpiob7 = portb.pb7.into_pull_up_input();
+        let mut gpiob4 = p_st.pb4;
 
        unsafe{nvic::unmask(tm4c123x::Interrupt::GPIOF);};
        unsafe{nvic_field.set_priority(tm4c123x::Interrupt::GPIOF, 1);};
@@ -238,20 +247,20 @@ impl physical_pins<'_> {
                 PhysicalPins::g2(State2::<PF4<Input<PullUp>>, PF4<Output<PushPull>>>::Output(
                     gpiof4,
                 )),
-                PhysicalPins::g3(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Output(
+                PhysicalPins::g3(State2::<PB0<Input<PullUp>>, PB0<Output<PushPull>>>::Output(
+                    gpiob0,
+                )),
+                PhysicalPins::g4(State2::<PB1<Input<PullUp>>, PB1<Output<PushPull>>>::Input(
+                    gpiob1,
+                )),
+                PhysicalPins::g5(State2::<PB2<Input<PullUp>>, PB2<Output<PushPull>>>::Input(
+                    gpiob2,
+                )),
+                PhysicalPins::g6(State2::<PB3<Input<PullUp>>, PB3<Output<PushPull>>>::Input(
                     gpiob3,
                 )),
-                PhysicalPins::g4(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
+                PhysicalPins::g7(State2::<PB4<Input<PullUp>>, PB4<Output<PushPull>>>::Input(
                     gpiob4,
-                )),
-                PhysicalPins::g5(State2::<PB5<Input<PullUp>>, PB5<Output<PushPull>>>::Input(
-                    gpiob5,
-                )),
-                PhysicalPins::g6(State2::<PB6<Input<PullUp>>, PB6<Output<PushPull>>>::Input(
-                    gpiob6,
-                )),
-                PhysicalPins::g7(State2::<PB7<Input<PullUp>>, PB7<Output<PushPull>>>::Input(
-                    gpiob7,
                 )),
             ]),
             Peripheral_set: None,
