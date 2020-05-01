@@ -37,11 +37,10 @@ pub struct PwmShim {
 
 pub struct required_components {
    // pub sysctl: tm4c123x::SYSCTL,
-    pub pb6: PB6<gpio::AF4>,
-    pub pb7: PB7<gpio::AF4>,
+    pub pb6: PB6<AlternateFunction<AF4, PushPull>>,
+    pub pb7: PB7<AlternateFunction<AF4, PushPull>>,
     pub pwm0: tm4c123x::PWM0,
     pub pwm1: tm4c123x::PWM1,
-    //pub pb6: tm4c123x_hal::gpio::gpiob::PB6<AlternateFunction<AF::4, PushPull>>,
     //pub pb7: tm4c123x_hal::gpio::gpiob::PB7<AlternateFunction<AF::4, PushPull>>,
 
 }

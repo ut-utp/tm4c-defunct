@@ -23,13 +23,19 @@ fn main() -> ! {
 
     //   //let clocks = sc.clock_setup.freeze();
 
-    let mut portf = p.GPIO_PORTF;
-    let mut portb = p.GPIO_PORTB;
+    let mut portf = p.GPIO_PORTF.split(&sc.power_control);
+    let mut portb = p.GPIO_PORTB.split(&sc.power_control);
     let mut pins = gpio::physical_pins::new(
         &sc.power_control,
         required_components {
-            portf: portf,
-            portb: portb,
+            pf1: portf.pf1.into_push_pull_output(),
+            pf2: portf.pf2.into_push_pull_output(),
+            pf4: portf.pf4.into_push_pull_output(),
+            pb0: portb.pb0.into_push_pull_output(),
+            pb1: portb.pb1.into_pull_up_input(),
+            pb2: portb.pb2.into_pull_up_input(),
+            pb3: portb.pb3.into_pull_up_input(),
+            pb4: portb.pb4.into_pull_up_input(),
         },
     );
     // pins.set_pin(GpioPin::G4, true);

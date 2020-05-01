@@ -30,8 +30,7 @@ fn main() -> ! {
     //let builder = interp::InterpreterBuilder::<'_,_, _>::new();
     let p = hal::Peripherals::take().unwrap();
     let mut sc = p.SYSCTL;
-    let mut portb = p.GPIO_PORTB;
-    let mut portd = p.GPIO_PORTD;
+
     let mut porta = p.GPIO_PORTF;
     let mut porte = p.GPIO_PORTE;
     let mut adc0 = p.ADC0;
@@ -39,10 +38,12 @@ fn main() -> ! {
     let mut pwm0 = p.PWM0;
     let mut pwm1 = p.PWM1;
     let sys = sc.constrain();
+    let mut portb = p.GPIO_PORTB.split(&sys.power_control);
+    let mut portd = p.GPIO_PORTD.split(&sys.power_control);
     let mut pwm_shim = pwm::PwmShim::new(required_components {
         //sysctl: sc,
-        portb: portb,
-        portd: portd,
+        pb6: portb.pb6.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
+        pb7: portb.pb7.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
         pwm0: pwm0,
         pwm1: pwm1,
     }, &sys.power_control);
