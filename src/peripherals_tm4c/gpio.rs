@@ -849,7 +849,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
             None => unreachable!(),
         }
 
-        unsafe{GPIO_INTERRUPTS[usize::from(pin)]==0;};
+        unsafe{GPIO_INTERRUPTS[usize::from(pin)]=0;};
         //unsafe{GPIO_INTERRPUT_B = 0};
     }
 
@@ -871,11 +871,18 @@ fn GPIOF(){
         let bits = sc.ris.read().bits();
 
         let trail_zeros = bits.trailing_zeros();
-
-        //sc.icr.write(|w| unsafe{w.bits(1)});   
-        if(trail_zeros <= 7){     
-        GPIO_INTERRUPTS[trail_zeros as usize] = 1;
-       }
+        if(bits && 0x02 == 0x02){
+        GPIO_INTERRUPTS[0] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x02)}); 
+        }  
+        if(bits && 0x04 == 0x04){
+        GPIO_INTERRUPTS[1] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x04)}); 
+        } 
+        if(bits && 0x10 == 0x10){
+        GPIO_INTERRUPTS[2] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x10)}); 
+        } 
         // let mut p = unsafe { &*tm4c123x::PWM0::ptr() };
         // //let p = Peripherals::take().unwrap().PWM1;
         // p.enable
@@ -885,8 +892,6 @@ fn GPIOF(){
         // //let p = Peripherals::take().unwrap().PWM1;
         // p.enable
         //     .write(|w| unsafe { w.bits(p.enable.read().bits()  & !2 ) });
-  
-
         //DEBUG
     // let mut p = unsafe { &*tm4c123x::GPIO_PORTF::ptr() };
     // let mut bits = p.data.read().bits();
@@ -908,6 +913,26 @@ fn GPIOB(){
         let bits = sc.ris.read().bits();
 
         let trail_zeros = bits.trailing_zeros();
+        if(bits && 0x01 == 0x01){
+        GPIO_INTERRUPTS[3] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x01)}); 
+        }  
+        if(bits && 0x02 == 0x02){
+        GPIO_INTERRUPTS[4] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x02)}); 
+        } 
+        if(bits && 0x04 == 0x04){
+        GPIO_INTERRUPTS[5] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x04)}); 
+        } 
+        if(bits && 0x08 == 0x08){
+        GPIO_INTERRUPTS[6] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x08)}); 
+        }  
+        if(bits && 0x10 == 0x10){
+        GPIO_INTERRUPTS[7] = 1;
+        sc.icr.write(|w| unsafe{w.bits(0x10)}); 
+        } 
 
         //sc.icr.write(|w| unsafe{w.bits(1)});   
         if(trail_zeros <= 7){     
