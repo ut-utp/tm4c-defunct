@@ -144,7 +144,7 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -155,7 +155,7 @@ dependencies = [
 [[package]]
 name = "lc3-device-support"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "embedded-hal",
  "lc3-isa",
@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "lc3-isa"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-macros",
  "serde",
@@ -179,7 +179,7 @@ dependencies = [
 [[package]]
 name = "lc3-macros"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -189,7 +189,7 @@ dependencies = [
 [[package]]
 name = "lc3-tm4c"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/tm4c?branch=feat-non-generic#a6bd07a50e996386c3e03eaafdb0ecf2347c468e"
+source = "git+https://github.com/ut-utp/tm4c?branch=feat-non-generic#67308058926a04ca83427e2063d845cc502263fb"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "lc3-traits"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=staging#aad288d8147f24823bf2921b269ef3a449c31909"
+source = "git+https://github.com/ut-utp//prototype?branch=staging#2bf05ae7d548ef503c1773f493cee5525db6e2e6"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -266,9 +266,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bdc6c187c65bca4260c9011c9e3132efe4909da44726bad24cf7572ae338d7f"
+checksum = "4c1f4b0efa5fc5e8ceb705136bfee52cfdb6a4e3509f770b478cd6ed434232a7"
 dependencies = [
  "proc-macro2",
 ]

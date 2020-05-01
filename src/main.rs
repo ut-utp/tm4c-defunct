@@ -126,17 +126,22 @@ fn main() -> ! {
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
     let mut u0 = p.UART0;
-
+    let mut portf = p.GPIO_PORTF.split(&sc.power_control);
+    let mut portb = p.GPIO_PORTB.split(&sc.power_control);
     // Peripheral Init:
     let peripheral_set = {
-        let portf = p.GPIO_PORTF;
-        let portb = p.GPIO_PORTB;
         let gpio = Tm4cGpio::new(
             &sc.power_control,
             GpioComponents {
-                portf,
-                portb,
-            }
+            pf1: portf.pf1.into_push_pull_output(),
+            pf2: portf.pf2.into_push_pull_output(),
+            pf4: portf.pf4.into_push_pull_output(),
+            pb0: portb.pb0.into_push_pull_output(),
+            pb1: portb.pb1.into_pull_up_input(),
+            pb2: portb.pb2.into_pull_up_input(),
+            pb3: portb.pb3.into_pull_up_input(),
+            pb4: portb.pb4.into_pull_up_input(),
+            },
         );
 
         let adc0 = p.ADC0;
@@ -159,14 +164,13 @@ fn main() -> ! {
         // This is bad because we're forfeiting compile time checking that we
         // don't try to use the same pins for PWM and GPIO *for absolutely no
         // reason*.
-        let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
-        let portd = p.GPIO_PORTD;
+     //   let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
         let pwm0 = p.PWM0;
         let pwm1 = p.PWM1;
         let pwm = Tm4cPwm::new(
             PwmComponents {
-                portb,
-                portd,
+                pb6: portb.pb6.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
+                pb7: portb.pb7.into_af_push_pull::<tm4c123x_hal::gpio::AF4>(&mut portb.control),
                 pwm0,
                 pwm1,
             },
