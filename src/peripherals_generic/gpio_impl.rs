@@ -138,10 +138,8 @@ where
         use crate::peripherals_generic::gpio::PhysGpioPin;
         let x = usize::from(pin);
 
-        match x{
-            0 => {
-                match state{
-                    Output =>{
+        macro_rules! set_state_input {
+            ($resp:ident) => {
                         let opt_handle = unsafe{
                                 core::mem::replace(
                                     &mut self.pin_block,
@@ -153,7 +151,55 @@ where
 
                             let mut handle2 = unsafe {
                                 core::mem::replace(
-                                    &mut handle.g0,
+                                    &mut handle.$resp,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+
+
+                        match handle2{
+                            PhysGpioPin::Output(pin) =>{
+                               let inp = pin.into_input();
+                            core::mem::replace(
+                            &mut handle.$resp,
+                            PhysGpioPin::Input(inp),
+                            );
+
+                            },
+                            _=>{},
+
+
+
+                        };
+
+                        core::mem::replace(
+                            &mut self.pin_block,
+                            Some(handle),
+                        );
+                        },
+                        None =>{},
+
+
+                    }
+
+                    self[pin] = State::Input(false);
+
+        }
+    }
+        macro_rules! set_state_output {
+            ( $resp:ident) => {
+                        let opt_handle = unsafe{
+                                core::mem::replace(
+                                    &mut self.pin_block,
+                                    core::mem::uninitialized(),
+                                )
+                            };
+                        match opt_handle{
+                        Some(mut handle) => {
+
+                            let mut handle2 = unsafe {
+                                core::mem::replace(
+                                    &mut handle.$resp,
                                     core::mem::uninitialized(),
                                 )
                             };
@@ -163,7 +209,7 @@ where
                             PhysGpioPin::Input(pin) =>{
                                let out = pin.into_output();
                             core::mem::replace(
-                            &mut handle.g0,
+                            &mut handle.$resp,
                             PhysGpioPin::Output(out),
                             );
 
@@ -181,108 +227,86 @@ where
                             &mut self.pin_block,
                             Some(handle),
                         );
-                        self[pin] = State::Output(false);
                         },
                         None =>{},
 
 
                     }
 
-                    
+                    self[pin] = State::Output(false);
 
-                    },
-                    _=>{}
-
-
-
-                    Input =>{
-                        let opt_handle = unsafe{
-                                core::mem::replace(
-                                    &mut self.pin_block,
-                                    core::mem::uninitialized(),
-                                )
-                            };
-                        match opt_handle{
-                        Some(mut handle) => {
-
-                            let mut handle2 = unsafe {
-                                core::mem::replace(
-                                    &mut handle.g0,
-                                    core::mem::uninitialized(),
-                                )
-                            };
-
-
-                        match handle2{
-                            PhysGpioPin::Output(pin) =>{
-                               let inp = pin.into_input();
-                            core::mem::replace(
-                            &mut handle.g0,
-                            PhysGpioPin::Input(inp),
-                            );
-
-                            },
-                            _=>{},
-
-
-
-                        };
-
-                       // handle2.g0 = pin_handle;
-
-
-                        core::mem::replace(
-                            &mut self.pin_block,
-                            Some(handle),
-                        );
-                        },
-                        None =>{},
-
-
-                    }
-
-                    self[pin] = State::Input(false);
-
-                    },
-                    _=>{}
-
-                    _=>{}
-
-                };
-
-
+        }
+    }
+    match state{
+        Output=>{
+        match x{
+            0 => {
+                set_state_output!(g0);
             },
 
             1=>{
 
+                set_state_output!(g1);
             },
 
             2 =>{
-
+                set_state_output!(g2);
             },
             3 => {
-
+                set_state_output!(g3);
             },
             4 => {
-
-            },
-            4 => {
-
+                set_state_output!(g4);
             },
             5 => {
-
+                set_state_output!(g5);
             },
             6 => {
-
+                set_state_output!(g6);
             },
             7 => {
-
+                set_state_output!(g7);
             },
-            _=>{
-
-            },
+            _=>{}
+         }
 
         }
+
+        Input=>{
+        match x{
+            0 => {
+                set_state_input!(g0);
+            },
+
+            1=>{
+
+                set_state_input!(g1);
+            },
+
+            2 =>{
+                set_state_input!(g2);
+            },
+            3 => {
+                set_state_input!(g3);
+            },
+            4 => {
+                set_state_input!(g4);
+            },
+            5 => {
+                set_state_input!(g5);
+            },
+            6 => {
+                set_state_input!(g6);
+            },
+            7 => {
+                set_state_input!(g7);
+            },
+            _=>{}
+         }
+
+        }
+        _=>{}
+    }
     	Ok(())
 
     }
@@ -311,9 +335,12 @@ where
 
        use crate::peripherals_generic::gpio::PhysGpioPin;
         let x = usize::from(pin);
+       
 
-        match x{
-            0 => {
+
+        macro_rules! set_pin {
+            ( $resp:ident) => {
+
                         let opt_handle = unsafe{
                                 core::mem::replace(
                                     &mut self.pin_block,
@@ -325,7 +352,7 @@ where
 
                             let mut handle2 = unsafe {
                                 core::mem::replace(
-                                    &mut handle.g0,
+                                    &mut handle.$resp,
                                     core::mem::uninitialized(),
                                 )
                             };
@@ -341,7 +368,7 @@ where
                                 pin.set_low();
                             }
                             core::mem::replace(
-                            &mut handle.g0,
+                            &mut handle.$resp,
                             PhysGpioPin::Output(pin),
                             );
 
@@ -366,40 +393,38 @@ where
 
                     }
 
-                    
+                }
+            }
 
-               
 
+        match x{
+            0 => {  
 
-                
-
+                set_pin!(g0);
 
             },
 
             1=>{
-
+                set_pin!(g1);
             },
 
             2 =>{
-
+                set_pin!(g2);
             },
             3 => {
-
+                set_pin!(g3);
             },
             4 => {
-
-            },
-            4 => {
-
+                set_pin!(g4);
             },
             5 => {
-
+                set_pin!(g5);
             },
             6 => {
-
+                set_pin!(g6);
             },
             7 => {
-
+                set_pin!(g7);
             },
             _=>{
 
