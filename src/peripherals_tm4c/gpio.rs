@@ -401,7 +401,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                                     );
                                 }
                                 State2::Interrupt(mut ins) =>{
-                                    let new_out = ins.into_pull_up_input();
+                                    let new_in = ins.into_pull_up_input();
                                     core::mem::replace(
                                         &mut self.mappinG2[pin as usize],
                                         $resp(State2::Interrupt(new_out)),
@@ -484,7 +484,8 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                                     );
                                 }
                                 State2::Interrupt(mut ins) =>{
-                                    let new_out = ins.into_pull_up_input();
+                                    let new_in = ins.into_pull_up_input();
+                                    let new_out = new_in.into_push_pull_output();
                                     core::mem::replace(
                                         &mut self.mappinG2[pin as usize],
                                         $resp(State2::Interrupt(new_out)),
@@ -561,6 +562,7 @@ impl<'a> Gpio<'a> for physical_pins<'a> {
                                         &mut self.mappinG2[pin as usize],
                                         $resp(State2::Output(out)),
                                     );
+                                    self[pin] = State::Interrupt(false);
                                 }
                                 State2::Interrupt(mut ins) =>{
                                     ins.set_interrupt_mode(tm4c123x_hal::gpio::InterruptMode::EdgeRising);

@@ -107,24 +107,14 @@ where PWM: hal_pwm<Channel=C, Duty=D, Time=T> + From<u8>,
     fn set_duty_cycle(&mut self, pin: PwmPin, duty: u8) {
         match pin{
        	PwmPin::P0 =>{
-       // match state{
-        	//PwmState::Enabled(x) => {
-        		//self.pwm.enable()
-        		//let d = duty.into();
-        		//self.pwm.set_duty(duty, 0.into());
-        		// /self.pwm_duties[0]=duty;
-        		//self.pin_states[0] = state;
-        	//},
-        	// PwmState::Disabled =>{
-        	// 	self.pins[1].enable();
-        	// 	//self.pin_states[0] = state;
-        	// },
+          self.pwm.set_duty(0.into(), duty.into());
+          self.pwm_duties[0] = duty as u32;
         }
     //},
        	PwmPin::P1 =>{
-       		//let d = duty.into();
-       		//self.pins[1].set_duty(d);
-       		//self.pwm_duties[1]=d;
+
+          self.pwm.set_duty(1.into(), duty.into());
+          self.pwm_duties[1] = duty as u32;
     }    
     }
       //  Ok(())
