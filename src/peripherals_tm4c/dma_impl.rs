@@ -1,6 +1,7 @@
 extern crate panic_halt;
 extern crate tm4c123x_hal as hal;
 extern crate tm4c123x;
+extern crate typenum;
 use cortex_m_rt::entry;
 use hal::prelude::*;
 use bbqueue::{BBBuffer, GrantR, GrantW, ConstBBBuffer, Consumer, Producer, consts::*};
@@ -24,16 +25,30 @@ pub struct tm4c_uart_dma_ctrl<'a>{
 	channel_control: [u32; 256],
 	device_dma: tm4c123x::UDMA,
 
+
+	//TODO: use impl type block to simplify this type
+	rx_prod: Producer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
+	rx_cons: Consumer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
+	tx_prod: Producer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
+	tx_cons: Consumer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
 	// add uart control fields
 
 }
 
 impl<'a> tm4c_uart_dma_ctrl <'a> {
 	pub fn new(dma_component: tm4c123x::UDMA, power: &'a mut tm4c123x::SYSCTL) -> Self{
+
+		let (mut rx_p, rx_c) = rx_buffer.try_split().unwrap();
+        let (tx_p, tx_c) = tx_buffer.try_split().unwrap();
+        
 		Self{
 			power_ctrl: power,
 			channel_control: [0; 256],
 			device_dma: dma_component,
+			rx_prod: rx_p,
+			rx_cons: rx_c,
+			tx_prod: tx_p,
+			tx_cons: tx_c,
 		}
 
 	}
@@ -44,9 +59,7 @@ impl<'a> gen_dma::DmaChannel for tm4c_uart_dma_ctrl <'a>{
     fn dma_device_init(&mut self){
  	    let channel_base_addr = &self.channel_control as *const u32;
 
-        let (mut rx_prod, rx_cons) = rx_buffer.try_split().unwrap();
-        let (tx_prod, tx_cons) = tx_buffer.try_split().unwrap();
-        let mut rx_grant = rx_prod.grant_exact(32).unwrap();
+ 	    let mut rx_grant = self.rx_prod.grant_exact(32).unwrap();
 
  	    self.power_ctrl.rcgcdma.write(|w| unsafe{w.bits(1)});
  	    self.device_dma.cfg.write(|w| unsafe{w.bits(1)});
@@ -54,7 +67,7 @@ impl<'a> gen_dma::DmaChannel for tm4c_uart_dma_ctrl <'a>{
 
  	    let mut uart_rx_control_slice: &mut [u32] = &mut self.channel_control[tm4c_dma_uart0_rx_control_index..tm4c_dma_uart0_rx_control_index+4];
 
- 	     //uart_rx_control_slice[0] = unsafe{&((*hal::serial::UART0::ptr()).dr) as *const Reg<u32, hal::tm4c123x::uart0::_DR> as u32}; // Works but is it necessary? Better way to get a raw pointer to uart data register?
+ 	     uart_rx_control_slice[0] = unsafe{&((*hal::serial::UART0::ptr()).dr) as *const Reg<u32, hal::tm4c123x::uart0::_DR> as u32}; // Works but is it necessary? Better way to get a raw pointer to uart data register?
  	     uart_rx_control_slice[0] = 0x4000_c000 as *const u32 as u32;  // index entry of the control struct is source address (UART data register in this case)
  	     uart_rx_control_slice[1] = rx_grant.buf().as_ptr() as u32;    // index entry 1 is destination address. Point to bbqueue buffer
 
