@@ -8,7 +8,7 @@ pub struct Dma1Channel <Peripheral> {
 
 
 //A trait for  a dma channel. A physical peripheral
-trait DmaChannel {
+pub trait DmaChannel {
 
     //Device secific preinitialization to enable DMA
     fn dma_device_init(&mut self);

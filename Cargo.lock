@@ -30,6 +30,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "bbqueue"
+version = "0.4.12"
+source = "git+https://github.com/jamesmunns/bbqueue.git?branch=master#1c88192e9a5884ce82b96efcb77e282abe134447"
+dependencies = [
+ "generic-array 0.13.2",
+]
+
+[[package]]
 name = "cast"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -148,6 +156,7 @@ dependencies = [
 name = "lc3-tm4c"
 version = "0.1.0"
 dependencies = [
+ "bbqueue",
  "cortex-m",
  "cortex-m-rt",
  "cortex-m-rt-macros",

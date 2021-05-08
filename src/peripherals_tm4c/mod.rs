@@ -7,6 +7,7 @@ pub mod clock;
 pub mod flash;
 pub mod gpio_tm4c_impl;
 pub mod adc_tm4c_hal_temp;
+pub mod dma_impl;
 
 use lc3_traits::peripherals::stubs;
 use lc3_traits::peripherals::stubs::*;
