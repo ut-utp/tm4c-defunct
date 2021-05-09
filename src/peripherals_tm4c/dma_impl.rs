@@ -25,12 +25,10 @@ pub struct tm4c_uart_dma_ctrl<'a>{
 	channel_control: [u32; 256],
 	device_dma: tm4c123x::UDMA,
 
-
-	//TODO: use impl type block to simplify this type
-	rx_prod: Producer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
-	rx_cons: Consumer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
-	tx_prod: Producer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
-	tx_cons: Consumer<'a, typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UInt<typenum::uint::UTerm, B1>, B0>, B0>, B0>, B0>, B0>, B0>>,
+	rx_prod: Producer<'a, U64>,
+	rx_cons: Consumer<'a, U64>,
+	tx_prod: Producer<'a, U64>,
+	tx_cons: Consumer<'a, U64>,
 	// add uart control fields
 
 }
