@@ -8,6 +8,9 @@ use bbqueue::{BBBuffer, GrantR, GrantW, ConstBBBuffer, Consumer, Producer, const
 use tm4c123x::generic::Reg;
 use crate::peripherals_generic::dma as gen_dma;
 
+use core::cell::UnsafeCell;
+use cortex_m::interrupt as int;
+
 const tm4c_dma_control_entries: usize = 4;  // 4 32 it entries for each channel
 const tm4c_dma_uart0_rx_control_channel: usize = 8;
 const tm4c_dma_uart0_tx_control_channel: usize = 9;
@@ -17,6 +20,27 @@ const tm4c_dma_uart0_tx_control_index: usize = tm4c_dma_uart0_tx_control_channel
 
 static rx_buffer: BBBuffer<U64> = BBBuffer( ConstBBBuffer::new() );
 static tx_buffer: BBBuffer<U64> = BBBuffer( ConstBBBuffer::new() );
+
+struct DMAStatus(UnsafeCell<u8>);
+
+impl DMAStatus {
+    pub fn set_complete(&self, _dma_ind: &int::CriticalSection) {
+        // By requiring a CriticalSection be passed in, we know we must
+        // be operating inside a CriticalSection, and so can confidently
+        // use this unsafe block (required to call UnsafeCell::get).
+        unsafe { *self.0.get() = 1 };
+    }
+
+    pub fn set_in_progress(&self, _dma_ind: &int::CriticalSection) {
+        unsafe { *self.0.get() = 0 };
+    }
+
+    pub fn read_status(&self, _dma_ind: &int::CriticalSection) -> u8 {
+        unsafe {*self.0.get()}
+    }
+}
+
+const DMA_COMPLETE_INDICATOR: DMAStatus = DMAStatus(UnsafeCell::new(0));
 
 
 // Should eventually have a dma struct for all peripherals and delegate to peripherals that need to use dma
@@ -92,7 +116,8 @@ impl<'a> gen_dma::DmaChannel for tm4c_uart_dma_ctrl <'a>{
     }
 
     fn dma_start(&mut self){
-        unimplemented!()
+       int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_in_progress(dma_ind));
+       //set the bit to start burst transaction here, enable arbitration on uart with high priority (nothing else uses dma)
     }
 
     fn dma_stop(&mut self){
@@ -100,8 +125,18 @@ impl<'a> gen_dma::DmaChannel for tm4c_uart_dma_ctrl <'a>{
     }
 
     fn dma_in_progress() -> bool{
-        unimplemented!()
+    	let mut dma_in_prog: bool = true;
+        let status: u8 = int::free(|dma_ind| DMA_COMPLETE_INDICATOR.read_status(dma_ind));
+        if(status == 1){
+        	dma_in_prog = false;
+        }
+        else{
+        	dma_in_prog = true;
+        }
+        dma_in_prog
     }
+
+    //Add an other method here to read the data and return on consumer side. The method checks the completion status and commits in bbqueue the number of bytes dma finished transferring
 }
 
 use cortex_m_rt_macros::interrupt;
@@ -115,4 +150,7 @@ fn UDMA(){
 
 #[interrupt]
 fn UART0(){
+
+	//First check the bit that triggered this interrupt. there is a bit that's set when dma transaction is complete and dma invokes uart vector,
+	int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_complete(dma_ind));
 }
