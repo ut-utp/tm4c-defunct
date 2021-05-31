@@ -152,5 +152,12 @@ fn UDMA(){
 fn UART0(){
 
 	//First check the bit that triggered this interrupt. there is a bit that's set when dma transaction is complete and dma invokes uart vector,
-	int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_complete(dma_ind));
+    //TODO: Instead of this, safely share the dma peripheral between background and foreground threads as described 
+	unsafe{
+		let mut dma = &*tm4c123x::UDMA::ptr();
+		let bits = dma.chis.read().bits();
+		if((bits & 0x100) == 0x100){
+			int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_complete(dma_ind));
+		}
+	}
 }
