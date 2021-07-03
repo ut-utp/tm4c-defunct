@@ -44,8 +44,7 @@ const DMA_COMPLETE_INDICATOR: DMAStatus = DMAStatus(UnsafeCell::new(0));
 
 
 // Should eventually have a dma struct for all peripherals and delegate to peripherals that need to use dma
-pub struct tm4c_uart_dma_ctrl<'a>{
-	power_ctrl: &'a mut tm4c123x::SYSCTL,
+pub struct tm4c_uart_dma_ctrl{
 
 	//TODO: abstract this control structure away from here. Better to just have a global variable with some safe features here. 
 	//That way, it's guaranteed to be static lifetime and put in .bss or data segment. Seems strange to initialize a byte aligned
@@ -57,13 +56,13 @@ pub struct tm4c_uart_dma_ctrl<'a>{
 
 }
 
-impl<'a> tm4c_uart_dma_ctrl <'a> {
-	pub fn new(dma_component: tm4c123x::UDMA, power: &'a mut tm4c123x::SYSCTL) -> Self{
+impl tm4c_uart_dma_ctrl {
+	pub fn new(dma_component: tm4c123x::UDMA) -> Self{
 
+        //power.rcgcdma.write(|w| unsafe{w.bits(1)});
         let control_struct = dma_control_structure([0; 256]);
         
 		Self{
-			power_ctrl: power,
 			channel_control: control_struct,
 			device_dma: dma_component,
 		}
@@ -71,12 +70,11 @@ impl<'a> tm4c_uart_dma_ctrl <'a> {
 	}
 }
 
-impl<'a> DmaChannel for tm4c_uart_dma_ctrl <'a>{
+impl DmaChannel for tm4c_uart_dma_ctrl{
 
     fn dma_device_init(&mut self){
  	    let channel_base_addr = &self.channel_control.0 as *const u32;
 
- 	    self.power_ctrl.rcgcdma.write(|w| unsafe{w.bits(1)});
  	    self.device_dma.cfg.write(|w| unsafe{w.bits(1)});
  	    self.device_dma.ctlbase.write(|w| unsafe{w.bits(channel_base_addr as u32)});
         self.device_dma.reqmaskclr.write(|w| unsafe{w.bits(0x100)});
@@ -91,11 +89,6 @@ impl<'a> DmaChannel for tm4c_uart_dma_ctrl <'a>{
  	     //index 2 is DMA channel control struct. Check datasheet page 611 for details. Here it represents dest addr increment by 1 byte; src addr fixed; 1 byte each; basic mode. Yet to complete and decide this
  	     //also create some abstractions and maybe a little dma API for tm4c to make this more generic rather than harcoding what we want it to do
  	     uart_rx_control_slice[2] = 0x0c00_0000 | 0x0311;
-
-         let uart0_temp = unsafe{&*tm4c123x::UART0::ptr()}; //Can fix this by maybe allowing dma own and consume uart? It is tricky though to avoid some stealing due to these cross linked peripherals. 
-                                                            //STM dma impl also uses these hacks. Revisit this later. There could be cleaner ways to do it. 
-         uart0_temp.dmactl.write(|w| unsafe{w.bits(1)});
-         uart0_temp.im.write(|w| unsafe{w.bits(0x10)});
 
     }
 
@@ -114,12 +107,18 @@ impl<'a> DmaChannel for tm4c_uart_dma_ctrl <'a>{
     // determined by XFERSIZE, ARBSIZE bits
     fn dma_set_transfer_length(&mut self, len: usize){
         let mut uart_rx_control_slice: &mut [u32] = &mut self.channel_control.0[tm4c_dma_uart0_rx_control_index..tm4c_dma_uart0_rx_control_index+4];
-        uart_rx_control_slice[1] = uart_rx_control_slice[1] + len as u32 - 1;
+        uart_rx_control_slice[1] = uart_rx_control_slice[1] + (len as u32) - 1;
     }
 
     fn dma_start(&mut self){
-       int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_in_progress(dma_ind));
-       //set the bit to start burst transaction here, enable arbitration on uart with high priority (nothing else uses dma)
+
+       //set the bit to start burst transaction here, enable arbitration on uart with high priority (nothing else uses dma)       
+      let uart0_temp = unsafe{&*tm4c123x::UART0::ptr()}; //Can fix this by maybe allowing dma own and consume uart? It is tricky though to avoid some stealing due to these cross linked peripherals. 
+                                                            //STM dma impl also uses these hacks. Revisit this later. There could be cleaner ways to do it. 
+       uart0_temp.dmactl.write(|w| unsafe{w.bits(1)});
+       //int::free(|dma_ind| DMA_COMPLETE_INDICATOR.set_in_progress(dma_ind));
+       uart0_temp.im.write(|w| unsafe{w.bits(0x10)});
+       
     }
 
     fn dma_stop(&mut self){

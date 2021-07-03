@@ -21,15 +21,16 @@ fn main() -> ! {
         hal::sysctl::SystemClock::UsePll(hal::sysctl::PllOutputFrequency::_80_00mhz),
     );
     let clocks = sc.clock_setup.freeze();
-
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
-    let mut porte = p.GPIO_PORTE.split(&sc.power_control);
-    let pe3 = porte.pe3.into_analog_input();
-    let pe2 = porte.pe2.into_analog_input();
-    let pe1 = porte.pe1.into_analog_input();
-    let pe0 = porte.pe0.into_analog_input();
-    let pe5 = porte.pe5.into_analog_input();
-    let pe4 = porte.pe4.into_analog_input();
+
+    // let mut porta = p.GPIO_PORTA.split(&sc.power_control);
+    // let mut porte = p.GPIO_PORTE.split(&sc.power_control);
+    // let pe3 = porte.pe3.into_analog_input();
+    // let pe2 = porte.pe2.into_analog_input();
+    // let pe1 = porte.pe1.into_analog_input();
+    // let pe0 = porte.pe0.into_analog_input();
+    // let pe5 = porte.pe5.into_analog_input();
+    // let pe4 = porte.pe4.into_analog_input();
    // let adc = adc::components::adc0(p. ADC0, &sc.power_control, (pe3, pe2, pe1, pe0, pe5, pe4));
 
 
