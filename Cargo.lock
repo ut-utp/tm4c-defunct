@@ -264,7 +264,6 @@ dependencies = [
  "panic-halt",
  "tm4c123x",
  "tm4c123x-hal",
- "typenum",
 ]
 
 [[package]]

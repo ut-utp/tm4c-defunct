@@ -1,7 +1,6 @@
 extern crate panic_halt;
 extern crate tm4c123x_hal as hal;
 extern crate tm4c123x;
-extern crate typenum;
 use cortex_m_rt::entry;
 use hal::prelude::*;
 use tm4c123x::generic::Reg;
