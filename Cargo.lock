@@ -75,15 +75,15 @@ dependencies = [
  "aligned",
  "bare-metal",
  "bitfield",
- "cortex-m 0.7.2",
+ "cortex-m 0.7.3",
  "volatile-register",
 ]
 
 [[package]]
 name = "cortex-m"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "643a210c1bdc23d0db511e2a576082f4ff4dcae9d0c37f50b431b8f8439d6d6b"
+checksum = "2ac919ef424449ec8c08d515590ce15d9262c0ca5f0da5b0c901e971a3b783b3"
 dependencies = [
  "bare-metal",
  "bitfield",
@@ -118,7 +118,7 @@ version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bffa6c1454368a6aa4811ae60964c38e6996d397ff8095a8b9211b1c1f749bc"
 dependencies = [
- "cortex-m 0.7.2",
+ "cortex-m 0.7.3",
 ]
 
 [[package]]
@@ -184,23 +184,23 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#0445d3c283a4c18317e879e64d7db332ad2dde5d"
 dependencies = [
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-isa",
+ "lc3-macros",
+ "lc3-traits",
  "static_assertions",
 ]
 
 [[package]]
 name = "lc3-device-support"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#a5d1560431245ec460a0de80649f0ab5c245b402"
+source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#0445d3c283a4c18317e879e64d7db332ad2dde5d"
 dependencies = [
  "bbqueue",
  "embedded-hal",
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support)",
- "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support)",
+ "lc3-isa",
+ "lc3-traits",
  "nb 0.1.3",
  "postcard",
  "serde",
@@ -210,19 +210,9 @@ dependencies = [
 [[package]]
 name = "lc3-isa"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#a5d1560431245ec460a0de80649f0ab5c245b402"
+source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#0445d3c283a4c18317e879e64d7db332ad2dde5d"
 dependencies = [
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support)",
- "serde",
- "static_assertions",
-]
-
-[[package]]
-name = "lc3-isa"
-version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
-dependencies = [
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-macros",
  "serde",
  "static_assertions",
 ]
@@ -230,17 +220,7 @@ dependencies = [
 [[package]]
 name = "lc3-macros"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#a5d1560431245ec460a0de80649f0ab5c245b402"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "lc3-macros"
-version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#0445d3c283a4c18317e879e64d7db332ad2dde5d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -258,8 +238,8 @@ dependencies = [
  "embedded-hal",
  "lc3-baseline-sim",
  "lc3-device-support",
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-traits 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-isa",
+ "lc3-traits",
  "nb 0.1.3",
  "panic-halt",
  "tm4c123x",
@@ -269,22 +249,10 @@ dependencies = [
 [[package]]
 name = "lc3-traits"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#a5d1560431245ec460a0de80649f0ab5c245b402"
+source = "git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support#0445d3c283a4c18317e879e64d7db332ad2dde5d"
 dependencies = [
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support)",
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git?branch=dma-uart-device-support)",
- "log",
- "serde",
- "static_assertions",
-]
-
-[[package]]
-name = "lc3-traits"
-version = "0.1.0"
-source = "git+https://github.com/ut-utp/prototype.git?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
-dependencies = [
- "lc3-isa 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
- "lc3-macros 0.1.0 (git+https://github.com/ut-utp/prototype.git)",
+ "lc3-isa",
+ "lc3-macros",
  "log",
  "serde",
  "static_assertions",
