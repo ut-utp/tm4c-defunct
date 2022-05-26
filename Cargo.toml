@@ -12,23 +12,28 @@ edition = "2018"
 # TODO: lints and attributes for this crate
 
 [dependencies]
-cortex-m-rt = {version = "0.6.10", features = ["device"]}
-cortex-m-semihosting = "0.3.3"
+# cortex-m-rt = { version = "0.7.1", features = ["device"] }
+cortex-m-rt = { version = "0.6.15", features = ["device"] }
+cortex-m-semihosting = "0.5.0"
 panic-halt = "0.2.0"
 # panic-semihosting = "0.5.3"
 
 # TODO: All of the below should use crates.io published version instead of git repos.
-lc3-device-support = { git = "https://github.com/ut-utp/prototype.git", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"]}
-lc3-baseline-sim = { git = "https://github.com/ut-utp/prototype.git", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"] }
-lc3-isa = { git = "https://github.com/ut-utp/prototype.git", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"] }
-lc3-traits = { git = "https://github.com/ut-utp/prototype.git", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"]  }
+lc3-device-support = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
+lc3-baseline-sim = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
+lc3-isa = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
+lc3-traits = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"]  }
 
 # tm4c123x-hal = { version = "0.9.0", features = ["rt"] }
-tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" , features=["rt"], rev="f4f7487202c7b777c6d2092cd6504f8d4c638ede"}
+tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" , features=["rt"], rev="f4f7487202c7b777c6d2092cd6504f8d4c638ede" }
 tm4c123x = "0.9.0"
-embedded-hal = "0.2.3"
+embedded-hal = "0.2.7"
 
-lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", branch = "feat-non-generic"}
+lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", rev = "b1c2dcb445965124918e7bbbd3be0af8589d76a9" }
+
+[profile.dev]
+lto = true
+opt-level = 1 # need this so we fit in flash!
 
 [profile.release]
 codegen-units = 1 # better optimizations
@@ -41,12 +46,16 @@ lto = true # better optimizations
 # https://github.com/rust-lang/cargo/issues/5478
 #
 # 'lc3-tm4c' has not updated yet..
+#
+# have to change the source so we do this silly workaround (note the two slashes)
 [patch."https://github.com/ut-utp/prototype.git"]
-lc3-isa = { git = "https://github.com/ut-utp//prototype", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"] }
-lc3-traits = { git = "https://github.com/ut-utp//prototype", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"]  }
-lc3-baseline-sim = { git = "https://github.com/ut-utp//prototype", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"] }
-lc3-device-support = { git = "https://github.com/ut-utp//prototype", branch = "staging", version = "0.1.0", default-features = false, features = ["no_std"]}
+lc3-isa = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+lc3-traits = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+lc3-baseline-sim = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+lc3-device-support = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
 
+# [patch.crates-io]
+# cortex-m-rt = { git = "https://github.com/rust-embedded/cortex-m.git", rev = "0.7.1", version = "0.7.1" }
 
 # [replace]
 # "lc3-isa:0.1.0" = { git = "https://github.com/ut-utp/prototype.git#staging"}
