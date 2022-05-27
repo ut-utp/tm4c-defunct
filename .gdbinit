@@ -1,6 +1,14 @@
 
 set print pretty on
 
+# print demangled symbols
+set print asm-demangle on
+
+# detect unhandled exceptions, hard faults and panics
+break DefaultHandler
+break UserHardFault
+break rust_begin_unwind
+
 py import duel
 
 # ptype <var | type>
@@ -85,6 +93,8 @@ print_errs(MMFSR, "MMFSR", mmfsr_faults)
 
 print_errs(HFSR, "HFSR", hfsr_faults)
 
+print("--")
+
     end
 end
 
@@ -98,27 +108,13 @@ end
 
 define reflash
     python
-from os.path import basename, dirname, splitext, getmtime
 import subprocess
-# import pty
 
-bin = gdb.objfiles()[0].filename
-axf = splitext(bin)[0] + ".axf"
-target = basename(dirname(bin))
+prog = gdb.objfiles()[0].filename
 
-# output = gdb.execute("shell ninja build-{} 2>&1".format(target), to_string = True)
-# _, so = pty.openpty()
-# output = subprocess.check_output("ninja build-{}".format(target), stdout = so, shell=True)
-# print(output.decode("utf-8"))
+# TODO: detect debug or release, etc.
+gdb.execute("shell cargo build --release")
 
-# if not output == b"ninja: no work to do.\n":
-#     gdb.execute('monitor program "{}"'.format(axf))
-
-before = getmtime(axf)
-gdb.execute("shell ninja build-{} 2>&1".format(target), True)
-after = getmtime(axf)
-
-if before != after:
-    gdb.execute('monitor program "{}"'.format(axf))
-    end
+gdb.execute('monitor program "{}"'.format(prog))
+gdb.execute('reset')
 end

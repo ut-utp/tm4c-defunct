@@ -1,12 +1,14 @@
+# The .gdbconfig / .gdbinit split exists because we support two flows
+# for debugging:
+#   1) dropping into a debugger with `cargo run` (see the runner set in `.cargo/config`)
+#   2) debugging from an IDE (i.e. VSCode)
+#
+# For the former flow we want to start up an openocd instance ourselve (which is what this file does).
+# For the latter, we want to let the IDE manage the openocd instance.
+#
+# .gdbinit has the stuff that's common to both flows.
+
 target remote | openocd -c "source [find board/ek-tm4c123gxl.cfg]" -c "gdb_port pipe; log_output target/openocd.log"
-
-# print demangled symbols
-set print asm-demangle on
-
-# detect unhandled exceptions, hard faults and panics
-break DefaultHandler
-break UserHardFault
-break rust_begin_unwind
 
 # *try* to stop at the user entry point (it might be gone due to inlining)
 break main
