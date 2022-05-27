@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "problemMatcher": [
+                "$rustc"
+            ],
+            "label": "Build UTP TM4C",
+            "group": {
+                "kind": "build",
+                "isDefault": true,
+            },
+            "command": [ "cargo", "build", "--release", "-p", "utp-tm4c" ],
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug UTP TM4C",
+            "cwd": "${workspaceFolder}",
+            "executable": "./target/thumbv7em-none-eabihf/release/utp-tm4c",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+
+            "servertype": "openocd",
+
+            // The default OpenOCD flash procedures yield errors when
+            // flashing ("Error erasing flash with vFlashErase packet (from target-download)"),
+            // especially on older boards (LM4F).
+            //
+            // We don't really have a good understanding of why this happens but
+            // we have, over the years, built up a battle tested sequence of OpenOCD
+            // commands that generally works and keeps the board from getting into
+            // bad states.
+            //
+            // See: https://github.com/ut-ras/Rasware/blob/e5bc8748db8931f742421b1d742d0c330b66d7b6/RASLib/Makefile#L80-L88
+            // And: https://github.com/rrbutani/tm4c-llvm-toolchain/blob/bb36dba9d52a9b51350ff8c035fdc91e87cc8b90/common.ninja#L346-L355
+            //
+            // So, we direct `cortex-m-debug` to feed these commands to the
+            // openocd server instead of the default ones on startup, launch,
+            // and restart:
+            "openOCDLaunchCommands": [
+                "init",
+                "halt",
+                "reset init",
+                "sleep 100",
+                "flash probe 0",
+            ],
+            "overrideLaunchCommands": [
+                "monitor halt",
+                "monitor reset init",
+                "monitor flash write_image erase target/thumbv7em-none-eabihf/release/utp-tm4c",
+                "monitor sleep 100",
+                "monitor flash verify_image target/thumbv7em-none-eabihf/release/utp-tm4c",
+                "monitor reset init"
+            ],
+            "overrideRestartCommands": [
+                "monitor reset init",
+            ],
+
+            // Use `gdb` instead of `arm-none-eabi-gdb`:
+            // Windows users will need to modify these paths, potentially:
+            "serverpath": "openocd",
+            "gdbPath": "gdb",
+            "preLaunchCommands": ["source .gdbinit"],
+            "showDevDebugOutput": "none",
+
+            // Use `llvm-objdump` and `llvm-nm`:
+            // Windows users will need to modify these paths, potentially:
+            "objdumpPath": "llvm-objdump",
+            "toolchainPrefix": "llvm-",
+
+            // Build before launching!
+            "preLaunchTask": "Build UTP TM4C",
+
+            // TM4C stuff:
+            "configFiles": [
+                "board/ti_ek-tm4c123gxl.cfg"
+            ],
+            "device": "TM4C123GXL",
+            "svdFile": ".vscode/TM4C123GH6PM.svd",
+        }
+    ]
+}
