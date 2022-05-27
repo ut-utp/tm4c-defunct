@@ -7,3 +7,19 @@
 Uses [thepster](https://github.com/thejpster/)'s [tm4c-hal crates](https://github.com/thejpster/tm4c-hal) heavily.
 
 🐝 🚧 This is very much not stable yet! 🚧 🐝
+
+To flash:
+```bash
+openocd \
+    -c "source [find board/ek-tm4c123gxl.cfg]" \
+    -c "init" \
+    -c "halt" \
+    -c "reset init" \
+    -c "sleep 100" \
+    -c "flash probe 0" \
+    -c "flash write_image erase target/thumbv7em-none-eabihf/release/utp-tm4c" \
+    -c "sleep 100" \
+    -c "verify_image target/thumbv7em-none-eabihf/release/utp-tm4c" \
+    -c "halt" \
+    -c "shutdown"
+```
