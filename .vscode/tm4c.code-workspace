@@ -15,7 +15,8 @@
             "serayuzgur.crates",
 			// Misc:
             "eamodio.gitlens",
-            // TODO: embedded things, gdb, etc.
+            // Embedded things:
+            "marus25.cortex-debug",
             // Nix:
             "jnoortheen.nix-ide",
             "mkhl.direnv"

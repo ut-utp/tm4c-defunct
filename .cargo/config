@@ -11,6 +11,7 @@ rustflags = [
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 [alias]
+b = "build --release"
 r = "run --release"
 
 # Notes:
