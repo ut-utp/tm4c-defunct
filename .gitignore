@@ -91,3 +91,6 @@ $RECYCLE.BIN/
 
 # Nix
 .direnv/
+
+# Fetched by Nix:
+.vscode/TM4C123GH6PM.svd
