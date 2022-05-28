@@ -46,5 +46,5 @@
 pub mod peripherals_tm4c;
 pub mod peripherals_generic;
 pub mod persistent_data_management;
-pub mod paging_impl;
-pub mod memory_impl;
+// pub mod paging_impl;
+// pub mod memory_impl;
