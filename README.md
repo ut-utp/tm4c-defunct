@@ -10,7 +10,7 @@ Uses [thejpster](https://github.com/thejpster/)'s [tm4c-hal crates](https://gith
 
 ## Usage
 
-To be used in conjuction with the [UTP TUI](github.com/ut-utp/tui.git).
+To be used in conjuction with the [UTP TUI](//github.com/ut-utp/tui.git).
 
 #### First: Flash your TM4C
 
@@ -18,7 +18,7 @@ You can grab a TM4C image (a `.bin` file; TODO: issue #7) from the [releases pag
 
 You'll need to grab `lm4flash` and potentially install a driver in order to flash your TM4C. [This page](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#for-the-tm4c) has instructions on how to do so.
 
-Once you've done this, to flash your board run `lm4flash <path to the .bin file>`.
+Once you've done this, to flash your board run `lm4flash -v <path to the .bin file>`.
 
 On macOS and Linux:
   - `lm4flash -v utp-tm4c.bin`
@@ -58,7 +58,7 @@ If you're looking to make changes to or hack on `utp-tm4c` there are a few more 
 > Note: If you're using macOS or Linux we _strongly_ recommend using [`nix`](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#using-nix) and [VSCode](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#ide-setup). This is the best supported workflow.
 #### Otherwise
 
-Follow [these instructions](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#ide-setup) to set up your dev environment. Be sure to also follow the ["Embedded Development Setup" instructions](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#embedded-development-setup).
+Follow [these instructions](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup) to set up your dev environment. Be sure to also follow the ["Embedded Development Setup" instructions](https://github.com/ut-utp/.github/wiki/Dev-Environment-Setup#embedded-development-setup).
 
 ### Doing Development
 
