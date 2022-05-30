@@ -7,8 +7,11 @@ rustflags = [
   "-C", "force-frame-pointers=yes",
 ]
 
-[build]
-target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+# Instead of this we specify `default-target` in `Cargo.toml`
+# (an unstable Cargo feature: https://doc.rust-lang.org/cargo/reference/unstable.html#per-package-target)
+# so that we can have the `xtask` package be built for the host.
+# [build]
+# target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 [alias]
 b = "build --release"

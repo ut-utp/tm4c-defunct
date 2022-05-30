@@ -1,8 +1,20 @@
+cargo-features = ["per-package-target"]
+
+[workspace]
+members = [
+    ".",
+    "xtask",
+]
+
 [package]
 name = "utp-tm4c"
 version = "0.1.0"
 authors = ["UT UTP <ut.utp.group@gmail.com>"]
 edition = "2018"
+
+# See: https://github.com/rust-lang/cargo/issues/9406
+# Requires nightly.
+default-target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 # TODO: CI
 # TODO: README
