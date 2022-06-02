@@ -7,11 +7,17 @@ rustflags = [
   "-C", "force-frame-pointers=yes",
 ]
 
-# Instead of this we specify `default-target` in `Cargo.toml`
-# (an unstable Cargo feature: https://doc.rust-lang.org/cargo/reference/unstable.html#per-package-target)
-# so that we can have the `xtask` package be built for the host.
-# [build]
-# target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+# Really what we want is `default-target` (an unstable Cargo feature:
+# https://doc.rust-lang.org/cargo/reference/unstable.html#per-package-target)
+# so that we can have the `xtask` package be built for the host and the
+# `utp-tm4c` package built for ARM.
+#
+# But, it doesn't look like the feature above is headed towards stabilization
+# anytime soon and we don't want to tie ourselves to nightly so we stick with
+# this and stomach needing to be in the repo root to `cargo run`/`cargo flash`.
+[build]
+target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 [alias]
 b = "build --release"
