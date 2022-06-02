@@ -3,39 +3,39 @@
 //! TODO!
 
 // TODO: forbid
-#![warn(
-    bad_style,
-    const_err,
-    dead_code,
-    improper_ctypes,
-    non_shorthand_field_patterns,
-    no_mangle_generic_items,
-    overflowing_literals,
-    path_statements,
-    patterns_in_fns_without_body,
-    private_in_public,
-    unconditional_recursion,
-    unused,
-    unused_allocation,
-    unused_lifetimes,
-    unused_comparisons,
-    unused_parens,
-    while_true
-)]
+// #![warn(
+//     bad_style,
+//     const_err,
+//     dead_code,
+//     improper_ctypes,
+//     non_shorthand_field_patterns,
+//     no_mangle_generic_items,
+//     overflowing_literals,
+//     path_statements,
+//     patterns_in_fns_without_body,
+//     private_in_public,
+//     unconditional_recursion,
+//     unused,
+//     unused_allocation,
+//     unused_lifetimes,
+//     unused_comparisons,
+//     unused_parens,
+//     while_true
+// )]
 // TODO: deny
-#![warn(
-    missing_debug_implementations,
-    intra_doc_link_resolution_failure,
-    missing_docs,
-    unsafe_code,
-    trivial_casts,
-    trivial_numeric_casts,
-    unused_extern_crates,
-    unused_import_braces,
-    unused_qualifications,
-    unused_results,
-    rust_2018_idioms
-)]
+// #![warn(
+//     missing_debug_implementations,
+//     // intra_doc_link_resolution_failure,
+//     missing_docs,
+//     unsafe_code,
+//     trivial_casts,
+//     trivial_numeric_casts,
+//     unused_extern_crates,
+//     unused_import_braces,
+//     unused_qualifications,
+//     unused_results,
+//     rust_2018_idioms
+// )]
 #![doc(test(attr(deny(rust_2018_idioms, warnings))))]
 #![doc(html_logo_url = "")] // TODO!
 
@@ -56,6 +56,8 @@ use lc3_baseline_sim::interp::{
     PeripheralInterruptFlags, OwnedOrRef, MachineState,
 };
 use lc3_baseline_sim::sim::Simulator;
+use lc3_traits::peripherals::gpio::{GpioPinArr, GpioMiscError};
+use lc3_traits::peripherals::stubs::{PwmStub, ClockStub, GpioStub};
 use lc3_traits::peripherals::{
     PeripheralSet,
     stubs::{
@@ -73,11 +75,11 @@ use lc3_device_support::{
 
 // use hal::{gpio::*, gpio::gpioe::*};
 use lc3_tm4c::peripherals_tm4c::{
-    gpio::{
-        required_components as GpioComponents,
-        physical_pins as Tm4cGpio,
-        // GpioShim exists but it's not used for anything and doesn't impl Gpio?
-    },
+    // gpio::{
+    //     required_components as GpioComponents,
+    //     physical_pins as Tm4cGpio,
+    //     // GpioShim exists but it's not used for anything and doesn't impl Gpio?
+    // },
     adc::{
         required_components as AdcComponents,
         AdcShim as Tm4cAdc,
@@ -101,16 +103,18 @@ use lc3_tm4c::peripherals_tm4c::{
 
 static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
 
-type Tm4cPeripheralSet<'int> = PeripheralSet<
-    'int,
-    Tm4cGpio<'int>,
-    Tm4cAdc,
-    Tm4cPwm,
-    Tm4cTimers<'int>,
-    Tm4cClock,
-    InputStub,
-    OutputStub,
->;
+// type Tm4cPeripheralSet<'int> = PeripheralSet<
+//     'int,
+//     Tm4cGpio<'int>,
+//     Tm4cAdc,
+//     Tm4cPwm,
+//     Tm4cTimers<'int>,
+//     Tm4cClock,
+//     InputStub,
+//     OutputStub,
+// >;
+
+
 
 #[entry]
 fn main() -> ! {
@@ -126,23 +130,19 @@ fn main() -> ! {
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
     let mut u0 = p.UART0;
-    let mut portf = p.GPIO_PORTF.split(&sc.power_control);
-    let mut portb = p.GPIO_PORTB.split(&sc.power_control);
     // Peripheral Init:
     let peripheral_set = {
-        let gpio = Tm4cGpio::new(
-            &sc.power_control,
-            GpioComponents {
-            pf1: portf.pf1.into_push_pull_output(),
-            pf2: portf.pf2.into_push_pull_output(),
-            pf4: portf.pf4.into_push_pull_output(),
-            pb0: portb.pb0.into_push_pull_output(),
-            pb1: portb.pb1.into_pull_up_input(),
-            pb2: portb.pb2.into_pull_up_input(),
-            pb3: portb.pb3.into_pull_up_input(),
-            pb4: portb.pb4.into_pull_up_input(),
-            },
-        );
+        // let portf = p.GPIO_PORTF;
+        // let portb = p.GPIO_PORTB;
+
+        // let gpio = Tm4cGpio::new(
+        //     &sc.power_control,
+        //     GpioComponents {
+        //         portf,
+        //         portb,
+        //     },
+        // );
+        let gpio = GpioStub;
 
         let adc0 = p.ADC0;
         let adc1 = p.ADC1;
@@ -156,26 +156,23 @@ fn main() -> ! {
             }
         );
 
-        // All the peripheral impls are currently written so that they take the
-        // entire port even when they only use a few pins from the port... This
-        // is not good and it means we have to completely unnecessarily use
-        // unsafe here to get another copy of port B.
-        //
-        // This is bad because we're forfeiting compile time checking that we
-        // don't try to use the same pins for PWM and GPIO *for absolutely no
-        // reason*.
-     //   let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
-        let pwm0 = p.PWM0;
-        let pwm1 = p.PWM1;
-        let pwm = Tm4cPwm::new(
-            PwmComponents {
-                pb6: portb.pb6.into_af_push_pull::<hal::gpio::AF4>(&mut portb.control),
-                pb7: portb.pb7.into_af_push_pull::<hal::gpio::AF4>(&mut portb.control),
-                pwm0,
-                pwm1,
-            },
-            &sc.power_control,
-        );
+        // let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
+        // let portd = p.GPIO_PORTD;
+        // let pwm0 = p.PWM0;
+        // let pwm1 = p.PWM1;
+        // Note: This will spin forever if you make the mistake of using an `lm4f` (which
+        // does not have PWM...).
+        // Perhaps we should have a `feature` for this at the very least?
+        // let pwm = Tm4cPwm::new(
+        //     PwmComponents {
+        //         portb,
+        //         portd,
+        //         pwm0,
+        //         pwm1,
+        //     },
+        //     &sc.power_control,
+        // );
+        let pwm = PwmStub;
 
         let timer0 = p.TIMER0;
         let timer1 = p.TIMER1;
@@ -187,13 +184,14 @@ fn main() -> ! {
             }
         );
 
-        let timer = p.TIMER2;
-        let clock = Tm4cClock::new(
-            ClockComponents {
-                timer,
-            },
-            &sc.power_control,
-        );
+        // let timer = p.TIMER2;
+        // let clock = Tm4cClock::new(
+        //     ClockComponents {
+        //         timer,
+        //     },
+        //     &sc.power_control,
+        // );
+        let clock = ClockStub;
 
         PeripheralSet::new(
             gpio,
@@ -228,7 +226,7 @@ fn main() -> ! {
 
     let mut memory = PartialMemory::default();
 
-    let mut interp: Interpreter<'static, _, Tm4cPeripheralSet<'_>> = Interpreter::new(
+    let mut interp: Interpreter<'static, _, _> = Interpreter::new(
         &mut memory,
         peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
@@ -244,7 +242,7 @@ fn main() -> ! {
     let enc = PostcardEncode::<ResponseMessage, _, _>::new(func);
     let dec = PostcardDecode::<RequestMessage, Cobs<Fifo<u8>>>::new();
 
-    let (mut tx, mut rx) = uart.split();
+    let (tx, rx) = uart.split();
 
     let mut device = Device::<UartTransport<_, _>, _, RequestMessage, ResponseMessage, _, _>::new(
         enc,
@@ -252,5 +250,5 @@ fn main() -> ! {
         UartTransport::new(rx, tx),
     );
 
-    loop { device.step(&mut sim); }
+    loop { let _ = device.step(&mut sim); }
 }
