@@ -68,15 +68,15 @@ dependencies = [
  "aligned",
  "bare-metal",
  "bitfield",
- "cortex-m 0.7.4",
+ "cortex-m 0.7.5",
  "volatile-register",
 ]
 
 [[package]]
 name = "cortex-m"
-version = "0.7.4"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ff967e867ca14eba0c34ac25cd71ea98c678e741e3915d923999bb2fe7c826"
+checksum = "cd20d4ac4aa86f4f75f239d59e542ef67de87cce2c282818dc6e84155d3ea126"
 dependencies = [
  "bare-metal",
  "bitfield",
@@ -90,19 +90,8 @@ version = "0.6.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "454f278bf469e2de0a4d22ea019d169d8944f86957c8207a39e3f66c32be2fc6"
 dependencies = [
- "cortex-m-rt-macros 0.6.15",
+ "cortex-m-rt-macros",
  "r0",
-]
-
-[[package]]
-name = "cortex-m-rt-macros"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4717562afbba06e760d34451919f5c3bf3ac15c7bb897e8b04862a7428378647"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -118,20 +107,11 @@ dependencies = [
 
 [[package]]
 name = "cortex-m-semihosting"
-version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bffa6c1454368a6aa4811ae60964c38e6996d397ff8095a8b9211b1c1f749bc"
-dependencies = [
- "cortex-m 0.7.4",
-]
-
-[[package]]
-name = "cortex-m-semihosting"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c23234600452033cc77e4b761e740e02d2c4168e11dbf36ab14a0f58973592b0"
 dependencies = [
- "cortex-m 0.7.4",
+ "cortex-m 0.7.5",
 ]
 
 [[package]]
@@ -197,7 +177,7 @@ dependencies = [
 [[package]]
 name = "lc3-baseline-sim"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git#1e9a83d39fdaa630b988108749f55d26e8134ac3"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -208,7 +188,7 @@ dependencies = [
 [[package]]
 name = "lc3-device-support"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git#1e9a83d39fdaa630b988108749f55d26e8134ac3"
 dependencies = [
  "embedded-hal",
  "lc3-isa",
@@ -222,7 +202,7 @@ dependencies = [
 [[package]]
 name = "lc3-isa"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git#1e9a83d39fdaa630b988108749f55d26e8134ac3"
 dependencies = [
  "lc3-macros",
  "serde",
@@ -232,7 +212,7 @@ dependencies = [
 [[package]]
 name = "lc3-macros"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git#1e9a83d39fdaa630b988108749f55d26e8134ac3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -242,12 +222,12 @@ dependencies = [
 [[package]]
 name = "lc3-tm4c"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp/tm4c?rev=b1c2dcb445965124918e7bbbd3be0af8589d76a9#b1c2dcb445965124918e7bbbd3be0af8589d76a9"
+source = "git+https://github.com/ut-utp/tm4c?branch=feat-non-generic-may-2020-snapshot#5c34cb7044cf737cf16c55af80568612bd0a6298"
 dependencies = [
  "cortex-m 0.6.7",
  "cortex-m-rt",
- "cortex-m-rt-macros 0.1.8",
- "cortex-m-semihosting 0.3.7",
+ "cortex-m-rt-macros",
+ "cortex-m-semihosting",
  "embedded-hal",
  "lc3-baseline-sim",
  "lc3-isa",
@@ -261,7 +241,7 @@ dependencies = [
 [[package]]
 name = "lc3-traits"
 version = "0.1.0"
-source = "git+https://github.com/ut-utp//prototype?branch=master#1e9a83d39fdaa630b988108749f55d26e8134ac3"
+source = "git+https://github.com/ut-utp/prototype.git#1e9a83d39fdaa630b988108749f55d26e8134ac3"
 dependencies = [
  "lc3-isa",
  "lc3-macros",
@@ -477,7 +457,7 @@ name = "utp-tm4c"
 version = "0.1.0"
 dependencies = [
  "cortex-m-rt",
- "cortex-m-semihosting 0.5.0",
+ "cortex-m-semihosting",
  "embedded-hal",
  "lc3-baseline-sim",
  "lc3-device-support",
@@ -515,3 +495,7 @@ checksum = "9ee8f19f9d74293faf70901bc20ad067dc1ad390d2cbf1e3f75f721ffee908b6"
 dependencies = [
  "vcell",
 ]
+
+[[package]]
+name = "xtask"
+version = "0.1.0"

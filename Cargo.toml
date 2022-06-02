@@ -18,7 +18,6 @@ edition = "2018"
 # TODO: lints and attributes for this crate
 
 [dependencies]
-# cortex-m-rt = { version = "0.7.1", features = ["device"] }
 cortex-m-rt = { version = "0.6.15", features = ["device"] }
 cortex-m-semihosting = "0.5.0"
 panic-halt = "0.2.0"
@@ -35,7 +34,7 @@ tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" ,
 tm4c123x = "0.9.0"
 embedded-hal = "0.2.7"
 
-lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", rev = "b1c2dcb445965124918e7bbbd3be0af8589d76a9" }
+lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", branch = "feat-non-generic-may-2020-snapshot" }
 
 [profile.dev]
 lto = true
@@ -54,11 +53,12 @@ lto = true # better optimizations
 # 'lc3-tm4c' has not updated yet..
 #
 # have to change the source so we do this silly workaround (note the two slashes)
-[patch."https://github.com/ut-utp/prototype.git"]
-lc3-isa = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
-lc3-traits = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
-lc3-baseline-sim = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
-lc3-device-support = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+# [patch."https://github.com/ut-utp/prototype.git"]
+# lc3-isa = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+# lc3-traits = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+# lc3-baseline-sim = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+# lc3-device-support = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+
 
 # [patch.crates-io]
 # cortex-m-rt = { git = "https://github.com/rust-embedded/cortex-m.git", rev = "0.7.1", version = "0.7.1" }
