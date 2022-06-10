@@ -1,3 +1,5 @@
+// #![feature(generic_associated_types)]
+
 //! Impl of the UTP platform for the TI TM4C.
 //!
 //! TODO!
@@ -45,6 +47,10 @@
 extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
+mod generic_gpio;
+
+use core::convert::Infallible;
+
 use cortex_m_rt::entry;
 use hal::prelude::*;
 
@@ -56,8 +62,8 @@ use lc3_baseline_sim::interp::{
     PeripheralInterruptFlags, OwnedOrRef, MachineState,
 };
 use lc3_baseline_sim::sim::Simulator;
-use lc3_traits::peripherals::gpio::{GpioPinArr, GpioMiscError};
-use lc3_traits::peripherals::stubs::{PwmStub, ClockStub, GpioStub};
+// use lc3_traits::peripherals::gpio::{GpioPinArr, GpioMiscError};
+use lc3_traits::peripherals::stubs::{PwmStub, ClockStub, GpioStub, TimersStub, AdcStub};
 use lc3_traits::peripherals::{
     PeripheralSet,
     stubs::{
@@ -73,30 +79,30 @@ use lc3_device_support::{
     util::Fifo,
 };
 
-// use hal::{gpio::*, gpio::gpioe::*};
-use lc3_tm4c::peripherals_tm4c::{
-    // gpio::{
-    //     required_components as GpioComponents,
-    //     physical_pins as Tm4cGpio,
-    //     // GpioShim exists but it's not used for anything and doesn't impl Gpio?
-    // },
-    adc::{
-        required_components as AdcComponents,
-        AdcShim as Tm4cAdc,
-    },
-    pwm::{
-        required_components as PwmComponents,
-        PwmShim as Tm4cPwm,
-    },
-    timers::{
-        required_components as TimerComponents,
-        TimersShim as Tm4cTimers,
-    },
-    clock::{
-        required_components as ClockComponents,
-        Tm4cClock,
-    },
-};
+// // use hal::{gpio::*, gpio::gpioe::*};
+// use lc3_tm4c::peripherals_tm4c::{
+//     // gpio::{
+//     //     required_components as GpioComponents,
+//     //     physical_pins as Tm4cGpio,
+//     //     // GpioShim exists but it's not used for anything and doesn't impl Gpio?
+//     // },
+//     adc::{
+//         required_components as AdcComponents,
+//         AdcShim as Tm4cAdc,
+//     },
+//     pwm::{
+//         required_components as PwmComponents,
+//         PwmShim as Tm4cPwm,
+//     },
+//     timers::{
+//         required_components as TimerComponents,
+//         TimersShim as Tm4cTimers,
+//     },
+//     clock::{
+//         required_components as ClockComponents,
+//         Tm4cClock,
+//     },
+// };
 
 // Unforuntately, this type alias is incomplete.
 // use lc3_tm4c::peripherals_tm4c::Peripheralstm4c;
@@ -114,6 +120,52 @@ static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
 //     OutputStub,
 // >;
 
+use tm4c123x_hal::gpio::{
+    self as gp,
+    PushPull,
+    PullDown,
+    gpiof::{self, PF1, PF2, PF3},
+    gpiob::{self, PB3, PB4, PB5, PB6, PB7},
+};
+
+generic_gpio::io_pins_with_typestate! {
+    #![allow(clippy::unit_arg)]
+    //! TODO: module doc comment!
+
+    for pins {
+        /// ... (red)
+        PF1 as G0,
+        /// ... (blue)
+        PF2 as G1,
+        /// ... (green)
+        PF3 as G2,
+        /// ...
+        PB3 as G3,
+        /// ...
+        PB4 as G4,
+        /// ...
+        PB5 as G5,
+        /// ...
+        PB6 as G6,
+        /// ...
+        PB7 as G7,
+    } as Tm4cGpio;
+
+    type Ctx = ();
+    type Error = Infallible;
+
+    type Disabled = gp::Tristate;
+    type Input = gp::Input<PullDown>;
+    type Output = gp::Output<PushPull>;
+
+    => disabled = |x, ()| Ok(x.into_tri_state())
+    => input    = |x, ()| Ok(x.into_pull_down_input())
+    => output   = |x, ()| Ok(x.into_push_pull_output())
+
+    => +interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
+    => -interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::Disabled))
+}
+
 
 
 #[entry]
@@ -129,7 +181,7 @@ fn main() -> ! {
     let clocks = sc.clock_setup.freeze();
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
-    let mut u0 = p.UART0;
+    let u0 = p.UART0;
     // Peripheral Init:
     let peripheral_set = {
         // let portf = p.GPIO_PORTF;
@@ -142,19 +194,26 @@ fn main() -> ! {
         //         portb,
         //     },
         // );
-        let gpio = GpioStub;
+        // let gpio = GpioStub;
 
-        let adc0 = p.ADC0;
-        let adc1 = p.ADC1;
-        let porte = p.GPIO_PORTE;
-        let adc = Tm4cAdc::new(
-            &sc.power_control,
-            AdcComponents {
-                adc0,
-                adc1,
-                porte,
-            }
-        );
+        let portf = p.GPIO_PORTF;
+        let portb = p.GPIO_PORTB;
+        let gpiof::Parts { pf1: g0, pf2: g1, pf3: g2, .. } = portf.split(&sc.power_control);
+        let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
+        let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7, &FLAGS.gpio);
+
+        // let adc0 = p.ADC0;
+        // let adc1 = p.ADC1;
+        // let porte = p.GPIO_PORTE;
+        // let adc = Tm4cAdc::new(
+        //     &sc.power_control,
+        //     AdcComponents {
+        //         adc0,
+        //         adc1,
+        //         porte,
+        //     }
+        // );
+        let adc = AdcStub;
 
         // let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
         // let portd = p.GPIO_PORTD;
@@ -174,15 +233,16 @@ fn main() -> ! {
         // );
         let pwm = PwmStub;
 
-        let timer0 = p.TIMER0;
-        let timer1 = p.TIMER1;
-        let timers = Tm4cTimers::new(
-            &sc.power_control,
-            TimerComponents {
-                timer0,
-                timer1,
-            }
-        );
+        // let timer0 = p.TIMER0;
+        // let timer1 = p.TIMER1;
+        // let timers = Tm4cTimers::new(
+        //     &sc.power_control,
+        //     TimerComponents {
+        //         timer0,
+        //         timer1,
+        //     }
+        // );
+        let timers = TimersStub;
 
         // let timer = p.TIMER2;
         // let clock = Tm4cClock::new(

@@ -1,5 +1,7 @@
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 runner = "gdb -q -x .gdbconfig"
+# runner = "cargo run --manifest-path .cargo/xtask/Cargo.toml"
+
 
 rustflags = [
   "-C", "link-arg=-Tlink.x",
@@ -20,8 +22,14 @@ rustflags = [
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 [alias]
+xtask = "-q run -p xtask --"
+
 b = "build --release"
 r = "run --release"
+f = "xtask flash"
+
+debug = "r"
+flash = "f"
 
 # Notes:
 # call stack: cargo +nightly call-stack  --bin utp-tm4c | dot -Tpng > out.png

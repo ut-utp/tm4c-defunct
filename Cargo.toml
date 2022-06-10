@@ -34,7 +34,7 @@ tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" ,
 tm4c123x = "0.9.0"
 embedded-hal = "0.2.7"
 
-lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", branch = "feat-non-generic-may-2020-snapshot" }
+# lc3-tm4c = { git = "https://github.com/ut-utp/tm4c", branch = "feat-non-generic-may-2020-snapshot" }
 
 [profile.dev]
 lto = true
@@ -58,6 +58,15 @@ lto = true # better optimizations
 # lc3-traits = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
 # lc3-baseline-sim = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
 # lc3-device-support = { git = "https://github.com/ut-utp//prototype", branch = "master", version = "0.1.0" }
+
+[patch."https://github.com/ut-utp/prototype.git"]
+lc3-isa =            { path = "../core/isa", version = "0.1.0" }
+lc3-traits =         { path = "../core/traits", version = "0.1.0" }
+lc3-baseline-sim =   { path = "../core/baseline-sim", version = "0.1.0" }
+lc3-device-support = { path = "../core/device-support", version = "0.1.0" }
+
+[patch."https://github.com/ut-utp/tm4c"]
+lc3-tm4c = { path = "../tm4c-peripherals" }
 
 
 # [patch.crates-io]
