@@ -191,6 +191,7 @@ dependencies = [
  "embedded-hal",
  "lc3-isa",
  "lc3-traits",
+ "log",
  "nb 0.1.3",
  "postcard",
  "serde",
@@ -473,8 +474,4 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
-
-[[patch.unused]]
-name = "lc3-tm4c"
 version = "0.1.0"

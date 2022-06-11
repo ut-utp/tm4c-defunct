@@ -1,5 +1,5 @@
 ### Cargo ###
-/target
+target
 **/*.rs.bk
 
 ### UTP Specific Things ###

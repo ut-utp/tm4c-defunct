@@ -65,8 +65,8 @@ lc3-traits =         { path = "../core/traits", version = "0.1.0" }
 lc3-baseline-sim =   { path = "../core/baseline-sim", version = "0.1.0" }
 lc3-device-support = { path = "../core/device-support", version = "0.1.0" }
 
-[patch."https://github.com/ut-utp/tm4c"]
-lc3-tm4c = { path = "../tm4c-peripherals" }
+# [patch."https://github.com/ut-utp/tm4c"]
+# lc3-tm4c = { path = "../tm4c-peripherals" }
 
 
 # [patch.crates-io]

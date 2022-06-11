@@ -1,7 +1,4 @@
 
-# We have to step at least once before quitting or else we get into a bad state:
-stepi
-
 set print pretty on
 
 # print demangled symbols
@@ -11,6 +8,10 @@ set print asm-demangle on
 break DefaultHandler
 break UserHardFault
 break rust_begin_unwind
+break main
+
+# We have to step at least once before quitting or else we get into a bad state:
+c # continue to main
 
 py import duel
 
