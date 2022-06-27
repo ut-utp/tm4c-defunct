@@ -29,8 +29,8 @@ lc3-baseline-sim = { git = "https://github.com/ut-utp/prototype.git", version = 
 lc3-isa = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"] }
 lc3-traits = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"]  }
 
-# tm4c123x-hal = { version = "0.9.0", features = ["rt"] }
-tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" , features=["rt"], rev="f4f7487202c7b777c6d2092cd6504f8d4c638ede" }
+ tm4c123x-hal = { version = "0.10.2", features = ["rt"] }
+#tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.0" , features=["rt"], rev="f4f7487202c7b777c6d2092cd6504f8d4c638ede" }
 tm4c123x = "0.9.0"
 embedded-hal = "0.2.7"
 

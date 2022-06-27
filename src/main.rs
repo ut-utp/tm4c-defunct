@@ -162,8 +162,10 @@ generic_gpio::io_pins_with_typestate! {
     => input    = |x, ()| Ok(x.into_pull_down_input())
     => output   = |x, ()| Ok(x.into_push_pull_output())
 
-    => +interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
-    => -interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::Disabled))
+    => interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
+    => interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::Disabled))
+    => interrupts = |inp, ()| Ok(inp.get_interrupt_status())
+    => interrupts = |inp, ()| Ok(inp.clear_interrupt())
 }
 
 

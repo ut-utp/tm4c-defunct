@@ -1,5 +1,6 @@
 use core::sync::atomic::Ordering;
 use core::{sync::atomic::AtomicBool, fmt::Debug};
+use core::cell::RefCell;
 
 
 use embedded_hal::digital::v2::InputPin as EmInputPin;
@@ -56,7 +57,7 @@ pub struct Gpio<
     g6: Pin<G6>,
     g7: Pin<G7>,
     interrupt_flags: &'i GpioPinArr<AtomicBool>,
-    ctx: OwnedOrMut<'c, Ctx>,
+    ctx: RefCell<OwnedOrMut<'c, Ctx>>,
 }
 
 impl<'c, 'i, A, B, C, D, E, F, G, H, CC> Gpio<'c, 'i, A, B, C, D, E, F, G, H, CC>
@@ -94,7 +95,7 @@ where
             g6: D(g6),
             g7: D(g7),
             interrupt_flags,
-            ctx: ctx.into(),
+            ctx: RefCell::new(ctx.into()),
         }
     }
 }
@@ -352,6 +353,20 @@ impl<P: Interrupts + IoPin> Pin<P> {
             Input(_) => Err(Err::IsInInputMode),
             Interrupt(_) => Err(Err::IsInInterruptMode),
             Transitioning => unreachable!(), // TODO: unchecked!
+        }
+    }
+
+    fn interrupt_occurred(&self, ctx: &mut P::Ctx) -> Result<bool, lc3_gp::GpioReadError> {
+        use Pin::*;
+        use lc3_gp::GpioReadError as Err;
+        match self {
+            Interrupt(inp) => {
+                P::interrupt_occurred(&inp, ctx).map_err(GpioMiscError::from_source).map_err(Into::into)
+            },
+            Disabled(_) => Err(Err::IsDisabled),
+            Output(_) => Err(Err::IsInOutputMode),
+            Transitioning => unreachable!(), // TODO: unchecked!
+            Input(inp) => Err(Err::IsDisabled) //error when in input mode but disabled interrupts
         }
     }
 }
@@ -859,9 +874,12 @@ where
 //     <I::Output as embedded_hal::digital::v2::OutputPin>::Error: Debug,
 // {}
 
+//Interrupt occured and clear should really be infallible? Can't do much on an error there
 pub trait Interrupts: IoPin {
     fn enable_interrupts(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
     fn disable_interrupts(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
+    fn interrupt_occurred(i: &Self::Input, ctx: &mut Self::Ctx) -> Result<bool, Self::Error>;
+    fn clear_interrupt(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
 }
 // ^ being split off means you can _just_ implement ^ in the case where
 // you're using an embedded_hal::IoPin impl
@@ -897,8 +915,10 @@ macro_rules! io_pins_with_typestate {
         => output   = |$to_o:pat, $c_o:pat| $to_output:expr
 
         // $(
-        => +interrupts = |$int_en:pat,  $c_ie:pat| $int_enabled:expr
-        => -interrupts = |$int_dis:pat, $c_di:pat| $int_disabled:expr
+        => interrupts = |$int_en:pat,  $c_ie:pat| $int_enabled:expr
+        => interrupts = |$int_dis:pat, $c_di:pat| $int_disabled:expr
+        => interrupts = |$int_occ: pat, $c_oc: pat| $int_occured:expr
+        => interrupts = |$int_clr: pat, $c_cl: pat| $int_clear:expr
         // )?
     ) => {
         $(#[$($mod_meta)*])*
@@ -957,6 +977,14 @@ macro_rules! io_pins_with_typestate {
                             $int_dis: &mut Self::Input, $c_di: &mut Self::Ctx,
                         ) -> Result<(), Self::Error> {
                             $int_disabled
+                        }
+                        fn interrupt_occurred($int_occ: &Self::Input, $c_oc: &mut Self::Ctx,
+                        ) -> Result<bool, Self::Error> {
+                            $int_occured
+                        }
+                        fn clear_interrupt($int_clr: &mut Self::Input, $c_cl: &mut Self::Ctx,
+                        ) -> Result<(), Self::Error> {
+                            $int_clear
                         }
                     }
                 // )?
@@ -1100,7 +1128,7 @@ where
     fn set_state(&mut self, pin: lc3_gp::GpioPin, state: lc3_gp::GpioState) -> Result<(), GpioMiscError> {
         pin_proxy!(
             self[pin] as ref mut p => {
-                p.set_state(state, self.ctx.as_mut())
+                p.set_state(state, self.ctx.borrow_mut().as_mut())
             }
         )
     }
@@ -1131,8 +1159,16 @@ where
 
     fn interrupt_occurred(&self, pin: lc3_gp::GpioPin) -> bool {
         debug_assert!(matches!(self.get_state(pin), lc3_gp::GpioState::Interrupt));
-
-        self.interrupt_flags[pin].load(Ordering::SeqCst)
+        self.interrupt_flags[pin].load(Ordering::SeqCst);
+        let mut ret = false; //return false on interrupt occured device read error
+        match pin_proxy!(self[pin] as ref p => p.interrupt_occurred( self.ctx.borrow_mut().as_mut())){
+            Ok(val) => {
+                ret = val
+            }
+            _ => {}
+        }
+        
+        ret
     }
 
 
