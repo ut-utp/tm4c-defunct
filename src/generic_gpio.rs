@@ -369,6 +369,21 @@ impl<P: Interrupts + IoPin> Pin<P> {
             Input(inp) => Err(Err::IsDisabled) //error when in input mode but disabled interrupts
         }
     }
+
+    fn clear_interrupt(&mut self, ctx: &mut P::Ctx) -> Result<(), lc3_gp::GpioReadError> {
+        use Pin::*;
+        use lc3_gp::GpioReadError as Err;
+        match self {
+            Interrupt(inp) => {
+                P::clear_interrupt(&inp, ctx).map_err(GpioMiscError::from_source).map_err(Into::into)
+            },
+            Disabled(_) => Err(Err::IsDisabled),
+            Output(_) => Err(Err::IsInOutputMode),
+            Transitioning => unreachable!(), // TODO: unchecked!
+            Input(inp) => Err(Err::IsDisabled) //error when in input mode but disabled interrupts
+        }
+    }
+
 }
 
 /* macro_rules! transform {
@@ -879,7 +894,9 @@ pub trait Interrupts: IoPin {
     fn enable_interrupts(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
     fn disable_interrupts(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
     fn interrupt_occurred(i: &Self::Input, ctx: &mut Self::Ctx) -> Result<bool, Self::Error>;
-    fn clear_interrupt(i: &mut Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
+    //TODO: Make this mutable. The TM4C hal impl doesn't need it to be mutable but clearing interrupt really seems like a mutable operation
+    //Need to find a woraround to the mutable ref problem here where fata move out of mutable reference happens when matching
+    fn clear_interrupt(i: &Self::Input, ctx: &mut Self::Ctx) -> Result<(), Self::Error>;
 }
 // ^ being split off means you can _just_ implement ^ in the case where
 // you're using an embedded_hal::IoPin impl
@@ -982,7 +999,7 @@ macro_rules! io_pins_with_typestate {
                         ) -> Result<bool, Self::Error> {
                             $int_occured
                         }
-                        fn clear_interrupt($int_clr: &mut Self::Input, $c_cl: &mut Self::Ctx,
+                        fn clear_interrupt($int_clr: &Self::Input, $c_cl: &mut Self::Ctx,
                         ) -> Result<(), Self::Error> {
                             $int_clear
                         }
@@ -1173,6 +1190,7 @@ where
 
 
     fn reset_interrupt_flag(&mut self, pin: lc3_gp::GpioPin) {
+        pin_proxy!(self[pin] as ref mut p => p.clear_interrupt( self.ctx.borrow_mut().as_mut()).unwrap());
         self.interrupt_flags[pin].store(false, Ordering::SeqCst);
     }
 
