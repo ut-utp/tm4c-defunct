@@ -48,6 +48,7 @@ extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
 mod generic_gpio;
+mod generic_adc;
 
 use core::convert::Infallible;
 
@@ -181,6 +182,7 @@ fn main() -> ! {
     let clocks = sc.clock_setup.freeze();
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
+     let mut porte = p.GPIO_PORTE.split(&sc.power_control);
     let u0 = p.UART0;
     // Peripheral Init:
     let peripheral_set = {
@@ -198,6 +200,12 @@ fn main() -> ! {
 
         let portf = p.GPIO_PORTF;
         let portb = p.GPIO_PORTB;
+        let pe3 = porte.pe3.into_analog_state();
+        let pe2 = porte.pe2.into_analog_state();
+        let pe1 = porte.pe1.into_analog_state();
+        let pe0 = porte.pe0.into_analog_state();
+        let pe5 = porte.pe5.into_analog_state();
+        let pe4 = porte.pe4.into_analog_state();
         let gpiof::Parts { pf1: g0, pf2: g1, pf3: g2, .. } = portf.split(&sc.power_control);
         let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
         let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7, &FLAGS.gpio);
@@ -213,7 +221,12 @@ fn main() -> ! {
         //         porte,
         //     }
         // );
-        let adc = AdcStub;
+
+    let mut tm4c_adc = hal::adc::Adc::adc0(p.ADC0, &sc.power_control);
+
+     let mut utp_adc = generic_adc::generic_adc_unit::new(tm4c_adc, pe3, pe2, pe1, pe0, pe5, pe4);
+
+    let adc = utp_adc;
 
         // let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
         // let portd = p.GPIO_PORTD;
