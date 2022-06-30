@@ -46,7 +46,7 @@ const RAM_PAGE_WORDS: usize = 256;
 const RAM_PAGE_SIZE: usize = WORD_SIZE*RAM_PAGE_WORDS;
 //Just having 1024 byte pages since that's what the TM4C flash block size is. Should probably find a way to do this generic
 
-const NUM_RAM_PAGES: usize = 2;
+const NUM_RAM_PAGES: usize = 8;
 //Support for storing 8 pages which is 8K and should easily fit in TM4C 32K RAM and a decent amount of LC-3 address space. 
 //Again specific size chosen with TM4C and LC3 in mind. TODO: Consider using const generics
 
