@@ -48,6 +48,12 @@ extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
 mod generic_gpio;
+mod flash;
+mod paging;
+mod memory_trait_RAM_flash;
+
+use crate::flash::Flash_Unit;
+use crate::paging::RAM_Pages;
 
 use core::convert::Infallible;
 
@@ -282,10 +288,14 @@ fn main() -> ! {
 
     let state: SimpleEventFutureSharedState = SimpleEventFutureSharedState::new();
 
-    let mut memory = PartialMemory::default();
+    // let mut memory = PartialMemory::default();
+
+    let mut flash_unit = flash::Flash_Unit::<u32>::new(p.FLASH_CTRL);
+    let mut RAM_paging_unit = paging::RAM_Pages::<Flash_Unit<u32>, u32>::new(flash_unit);
+    let mut RAM_backed_flash_memory_unit =  memory_trait_RAM_flash::RAM_backed_flash_memory::<RAM_Pages<Flash_Unit<u32>, u32>, Flash_Unit<u32>>::new(RAM_paging_unit);
 
     let interp: Interpreter<'static, _, _> = Interpreter::new(
-        &mut memory,
+        &mut RAM_backed_flash_memory_unit,
         peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
         [0; 8],
