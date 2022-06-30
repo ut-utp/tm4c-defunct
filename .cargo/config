@@ -22,11 +22,17 @@ rustflags = [
 target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
 
 [alias]
-xtask = "-q run -p xtask --"
+
+# Normally `xtask`s live in the same workspace as the actual repositories but
+# TODO (target difference; need `default-target` or `forced-target` both of which require nightly which we don't want to necessiate)
+# other option is to encode the embedded target purely in the xtask or in aliases but this is undesirable because it breaks extensions (i.e. cargo bloat)
+#
+# the downside to this option is that it requires you to be in the root of the repo because of the relative path here.
+xtask = "-q run --manifest-path .cargo/xtask/Cargo.toml --"
 
 b = "build --release"
 r = "run --release"
-f = "xtask flash"
+f = "xtask flash --release"
 
 debug = "r"
 flash = "f"

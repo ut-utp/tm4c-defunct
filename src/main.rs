@@ -48,7 +48,6 @@ extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
 mod generic_gpio;
-mod generic_adc;
 
 use core::convert::Infallible;
 
@@ -77,6 +76,7 @@ use lc3_device_support::{
         transport::uart_simple::UartTransport,
         encoding::{PostcardEncode, PostcardDecode, Cobs},
     },
+    peripherals::adc::generic_adc_unit as GenericAdc,
     util::Fifo,
 };
 
@@ -163,9 +163,18 @@ generic_gpio::io_pins_with_typestate! {
     => input    = |x, ()| Ok(x.into_pull_down_input())
     => output   = |x, ()| Ok(x.into_push_pull_output())
 
-    => +interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
-    => -interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::Disabled))
+    => enable  interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
+    => disable interrupts = |inp, ()| {
+        inp.clear_interrupt();
+        Ok(inp.set_interrupt_mode(gp::InterruptMode::Disabled))
+    }
+
+    => interrupts {
+        check = |i, ()| i.get_interrupt_status();
+        reset = |i, ()| i.clear_interrupt();
+    }
 }
+
 
 
 
@@ -182,51 +191,25 @@ fn main() -> ! {
     let clocks = sc.clock_setup.freeze();
 
     let mut porta = p.GPIO_PORTA.split(&sc.power_control);
-     let mut porte = p.GPIO_PORTE.split(&sc.power_control);
     let u0 = p.UART0;
     // Peripheral Init:
     let peripheral_set = {
-        // let portf = p.GPIO_PORTF;
-        // let portb = p.GPIO_PORTB;
-
-        // let gpio = Tm4cGpio::new(
-        //     &sc.power_control,
-        //     GpioComponents {
-        //         portf,
-        //         portb,
-        //     },
-        // );
-        // let gpio = GpioStub;
-
         let portf = p.GPIO_PORTF;
         let portb = p.GPIO_PORTB;
+        let gpiof::Parts { pf1: g0, pf2: g1, pf3: g2, .. } = portf.split(&sc.power_control);
+        let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
+        let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7);
+
+
+        let porte = p.GPIO_PORTE.split(&sc.power_control);
         let pe3 = porte.pe3.into_analog_state();
         let pe2 = porte.pe2.into_analog_state();
         let pe1 = porte.pe1.into_analog_state();
         let pe0 = porte.pe0.into_analog_state();
         let pe5 = porte.pe5.into_analog_state();
         let pe4 = porte.pe4.into_analog_state();
-        let gpiof::Parts { pf1: g0, pf2: g1, pf3: g2, .. } = portf.split(&sc.power_control);
-        let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
-        let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7, &FLAGS.gpio);
-
-        // let adc0 = p.ADC0;
-        // let adc1 = p.ADC1;
-        // let porte = p.GPIO_PORTE;
-        // let adc = Tm4cAdc::new(
-        //     &sc.power_control,
-        //     AdcComponents {
-        //         adc0,
-        //         adc1,
-        //         porte,
-        //     }
-        // );
-
-    let mut tm4c_adc = hal::adc::Adc::adc0(p.ADC0, &sc.power_control);
-
-     let mut utp_adc = generic_adc::generic_adc_unit::new(tm4c_adc, pe3, pe2, pe1, pe0, pe5, pe4);
-
-    let adc = utp_adc;
+        let adc_unit = hal::adc::Adc::adc0(p.ADC0, &sc.power_control);
+        let adc = GenericAdc::new(adc_unit, pe3, pe2, pe1, pe0, pe5, pe4);
 
         // let portb = unsafe { hal::Peripherals::steal() }.GPIO_PORTB;
         // let portd = p.GPIO_PORTD;
@@ -288,6 +271,8 @@ fn main() -> ! {
             .into_af_push_pull::<hal::gpio::AF1>(&mut porta.control),
         (),
         (),
+        // 3_000_000_u32.bps(),
+        // 3_686_400_u32.bps(),
         1_500_000_u32.bps(),
         // hal::serial::NewlineMode::SwapLFtoCRLF,
         hal::serial::NewlineMode::Binary,
@@ -299,14 +284,13 @@ fn main() -> ! {
 
     let mut memory = PartialMemory::default();
 
-    let mut interp: Interpreter<'static, _, _> = Interpreter::new(
+    let interp: Interpreter<'static, _, _> = Interpreter::new(
         &mut memory,
         peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
         [0; 8],
         0x200,
         MachineState::Running,
-
     );
 
     let mut sim = Simulator::new_with_state(interp, &state);

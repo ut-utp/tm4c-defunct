@@ -11,7 +11,7 @@ break rust_begin_unwind
 break main
 
 # We have to step at least once before quitting or else we get into a bad state:
-c # continue to main
+# c # continue to main
 
 py import duel
 
@@ -119,6 +119,7 @@ prog = gdb.objfiles()[0].filename
 # TODO: detect debug or release, etc.
 gdb.execute("shell cargo build --release")
 
-gdb.execute('monitor program "{}"'.format(prog))
+# gdb.execute('monitor program "{}"'.format(prog))
+gdb.execute('load')
 gdb.execute('reset')
 end
