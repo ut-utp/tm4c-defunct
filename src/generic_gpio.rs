@@ -103,11 +103,11 @@ where
     G6: Interrupts + IoPin<Ctx = Ctx>,
     G7: Interrupts + IoPin<Ctx = Ctx>,
 {
-    fn interrupt_pending(&self, pin: lc3_gp::GpioPin, pins: &Pins<G0, G1, G2, G3, G4, G5, G6, G7, Ctx>, ctx: &Ctx) -> bool {
+    fn interrupt_pending(&self, pin: lc3_gp::GpioPin, _pins: &Pins<G0, G1, G2, G3, G4, G5, G6, G7, Ctx>, _ctx: &Ctx) -> bool {
         self.0[pin].load(Ordering::SeqCst)
     }
 
-    fn clear_interrupt(&mut self, pin: lc3_gp::GpioPin, pins: &mut Pins<G0, G1, G2, G3, G4, G5, G6, G7, Ctx>, ctx: &mut Ctx) {
+    fn clear_interrupt(&mut self, pin: lc3_gp::GpioPin, _pins: &mut Pins<G0, G1, G2, G3, G4, G5, G6, G7, Ctx>, _ctx: &mut Ctx) {
         self.0[pin].store(false, Ordering::SeqCst)
     }
 }
@@ -141,7 +141,7 @@ where
 
 pub trait PollForInterrupts: IoPin {
     fn interrupt_pending(p: &Self::Input, ctx: &Self::Ctx) -> bool;
-    fn clear_interrupt(P: &mut Self::Input, ctx: &mut Self::Ctx);
+    fn clear_interrupt(p: &mut Self::Input, ctx: &mut Self::Ctx);
 }
 
 impl<A, B, C, D, E, F, G, H, CC> InterruptSolution<A, B, C, D, E, F, G, H, CC> for SelfContainedInterruptSolution<A, B, C, D, E, F, G, H, CC>
@@ -703,11 +703,11 @@ macro_rules! io_pins_with_typestate {
 
                 // TODO: make optional
                     impl $crate::generic_gpio::PollForInterrupts for $alias {
-                        fn interrupt_pending($inp_mode_chk: &Self::Input, ctx: &Self::Ctx) -> bool {
+                        fn interrupt_pending($inp_mode_chk: &Self::Input, $c_int_c: &Self::Ctx) -> bool {
                             $int_check
                         }
 
-                        fn clear_interrupt($inp_mode_res: &mut Self::Input, ctx: &mut Self::Ctx) {
+                        fn clear_interrupt($inp_mode_res: &mut Self::Input, $c_int_r: &mut Self::Ctx) {
                             $int_reset
                         }
                     }

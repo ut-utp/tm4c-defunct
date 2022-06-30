@@ -44,6 +44,17 @@
 #![no_std]
 #![no_main]
 
+// #[cfg(not(target = "thumbv7em-none-eabihf"))]
+// compile_error!("
+
+// This crate only builds for `thumbv7em-none-eabihf`!
+
+// Please either pass `--target thumbv7em-none-eabihf` to `cargo` or
+// use one of the aliases (like `cargo r` to run) defined in `.cargo/config`.
+
+
+// ");
+
 extern crate panic_halt as _;
 extern crate tm4c123x_hal as hal;
 
@@ -290,12 +301,12 @@ fn main() -> ! {
 
     // let mut memory = PartialMemory::default();
 
-    let mut flash_unit = flash::Flash_Unit::<u32>::new(p.FLASH_CTRL);
-    let mut RAM_paging_unit = paging::RAM_Pages::<Flash_Unit<u32>, u32>::new(flash_unit);
-    let mut RAM_backed_flash_memory_unit =  memory_trait_RAM_flash::RAM_backed_flash_memory::<RAM_Pages<Flash_Unit<u32>, u32>, Flash_Unit<u32>>::new(RAM_paging_unit);
+    let flash_unit = flash::Flash_Unit::<u32>::new(p.FLASH_CTRL);
+    let ram_paging_unit = paging::RAM_Pages::<Flash_Unit<u32>, u32>::new(flash_unit);
+    let mut memory =  memory_trait_RAM_flash::RAM_backed_flash_memory::<RAM_Pages<Flash_Unit<u32>, u32>, Flash_Unit<u32>>::new(ram_paging_unit);
 
     let interp: Interpreter<'static, _, _> = Interpreter::new(
-        &mut RAM_backed_flash_memory_unit,
+        &mut memory,
         peripheral_set,
         OwnedOrRef::Ref(&FLAGS),
         [0; 8],

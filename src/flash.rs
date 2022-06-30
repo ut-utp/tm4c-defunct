@@ -1,3 +1,4 @@
+#![allow(non_camel_case_types, unused_must_use, non_snake_case, unused)]
 
 //*****************************************************************************
 //
@@ -91,10 +92,7 @@ FlashProgram(uint32_t *pui32Data, uint32_t ui32Address, uint32_t ui32Count)
 extern crate tm4c123x_hal as hal;
 //use flash_embedded_hal::flash;
 use cortex_m_rt::entry;
-use hal::prelude::*;
 //use lc3_tm4c::peripherals_generic::dma;
-use tm4c123x::generic::Reg;
-use core::fmt::Write;
 use core::ptr::read_volatile;
 use core::marker::PhantomData;
 
@@ -190,13 +188,13 @@ impl <DAT> Read for Flash_Unit <DAT>{
         self.flash.fcmisc.write(|w| unsafe{w.bits(1)});
         let y = 4;
         let x = WORD::from(y);
-        Ok((x))//Ok((0))
+        Ok(x)//Ok((0))
     }
 
     fn read_page(&mut self, address: usize) -> [u32; 256]{
         let mut page: [u32; 256] = [0; 256];
         for i in 0..256 {
-            page[i] = unsafe {read_volatile(((address & !0x3FF) + FLASH_STORAGE_ADDR_OFFSET + i*(4 as usize)) as (*const u32))};
+            page[i] = unsafe {read_volatile(((address & !0x3FF) + FLASH_STORAGE_ADDR_OFFSET + i*(4 as usize)) as *const u32)};
         }
         page
     }
@@ -248,7 +246,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
     type Error = u32;
     type Status = u32;
 
-    fn status(&self) -> Result<Self::Status, Self::Error> {Ok((0))}
+    fn status(&self) -> Result<Self::Status, Self::Error> {Ok(0)}
 
     fn erase_page(&mut self, address: usize) -> Result<(), Self::Error> {
 //     HWREG(FLASH_FCMISC) = (FLASH_FCMISC_AMISC | FLASH_FCMISC_VOLTMISC |
@@ -269,7 +267,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
         self.flash.fma.write(|w| unsafe{w.bits((address + FLASH_STORAGE_ADDR_OFFSET) as u32 & !0x3FF)});
         self.flash.fmc.write(|w| unsafe{w.bits(FLASH_FMC_WRKEY | FLASH_FMC_ERASE)});
 
-        while((self.flash.fmc.read().bits() & FLASH_FMC_ERASE) != 0){}
+        while (self.flash.fmc.read().bits() & FLASH_FMC_ERASE) != 0 {}
 
 //     //
 //     // Return an error if an access violation or erase error occurred.
@@ -286,7 +284,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
 //     return(0);
         let mut status: Result<(), u32> = Ok(());
 
-        if((self.flash.fcris.read().bits() & (FLASH_FCRIS_ARIS | FLASH_FCRIS_VOLTRIS | FLASH_FCRIS_ERRIS)) != 0){
+        if (self.flash.fcris.read().bits() & (FLASH_FCRIS_ARIS | FLASH_FCRIS_VOLTRIS | FLASH_FCRIS_ERRIS)) != 0 {
              status = Err(1);
         }
         else{
@@ -320,7 +318,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
             //HWREG(FLASH_FMA) = ui32Address & ~(0x7f);
 
             self.flash.fma.write(|w| unsafe{w.bits(temp_addr as u32 & !0x7f)});
-       
+
            /*while(((ui32Address & 0x7c) || (HWREG(FLASH_FWBVAL) == 0)) &&
                   (ui32Count != 0))
             {
@@ -331,7 +329,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
                 ui32Address += 4;
                 ui32Count -= 4;
             }*/
-           while ((words_left != 0) && ((self.flash.fwbval.read().bits() == 0) || (temp_addr & 0x7c > 0))){
+           while (words_left != 0) && ((self.flash.fwbval.read().bits() == 0) || (temp_addr & 0x7c > 0)) {
                 self.flash.fwbn[(temp_addr & 0x7c) >> 2].write(|w| unsafe{w.bits(data[ctr])});
                 ctr += 1;
                 words_left -= 1;
@@ -349,7 +347,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
             // while(HWREG(FLASH_FMC2) & FLASH_FMC2_WRBUF)
             // {
             // }
-            while((self.flash.fmc2.read().bits() & FLASH_FMC2_WRBUF) != 0){}
+            while (self.flash.fmc2.read().bits() & FLASH_FMC2_WRBUF) != 0 {}
         }
 
     //
@@ -363,7 +361,7 @@ impl <DAT> WriteErase for Flash_Unit <DAT>{
 
     let mut status: Result<(), u32> = Ok(());
 
-    if((self.flash.fcris.read().bits() & (FLASH_FCRIS_ARIS | FLASH_FCRIS_VOLTRIS | FLASH_FCRIS_INVDRIS | FLASH_FCRIS_PROGRIS)) != 0){
+    if (self.flash.fcris.read().bits() & (FLASH_FCRIS_ARIS | FLASH_FCRIS_VOLTRIS | FLASH_FCRIS_INVDRIS | FLASH_FCRIS_PROGRIS)) != 0 {
          status = Err(1);
     }
     else{
