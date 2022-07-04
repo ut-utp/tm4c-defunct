@@ -1,6 +1,7 @@
+#![allow(non_camel_case_types, unused_must_use, non_snake_case, unused)]
+
 use lc3_traits::memory::*;
-use core::cell::{RefCell, Cell};
-use core::cell::{RefMut, Ref};
+use core::cell::RefCell;
 use crate::paging::*;
 use crate::flash::*;
 use core::marker::PhantomData;
@@ -20,10 +21,10 @@ pub struct RAM_backed_flash_memory <T: RAM_backed_flash, U: Read + WriteErase>{
 
 impl <T: RAM_backed_flash, U: Read + WriteErase> RAM_backed_flash_memory<T, U>{
     pub fn new(RAM_flash_controller_init: T) -> RAM_backed_flash_memory<T, U> {
-        RAM_backed_flash_memory { 
+        RAM_backed_flash_memory {
                     program_data: ProgramMetadata::empty(),
                     RAM_backed_flash_controller: RefCell::new(RAM_flash_controller_init),
-                    phantom: PhantomData 
+                    phantom: PhantomData
         }
     }
 }
@@ -50,7 +51,7 @@ impl <T: RAM_backed_flash, U: Read + WriteErase> Memory for RAM_backed_flash_mem
         dword = self.RAM_backed_flash_controller.borrow_mut().read_word((addr as usize)*2 & !0x3);
         let first_word: u16 = (dword & 0xFFFF) as u16;
         let second_word: u16 = ((dword >> 16) & 0xFFFF) as u16;
-        if(addr & 0x1 == 1){
+        if addr & 0x1 == 1 {
             desired_word = second_word;
         }
         else{
@@ -70,7 +71,7 @@ impl <T: RAM_backed_flash, U: Read + WriteErase> Memory for RAM_backed_flash_mem
         let dword = ctrl_inst.read_word((addr as usize)*2 & (!0x3));
         let first_word: u16 = (dword & 0xFFFF) as u16;
         let second_word: u16 = ((dword >> 16) & 0xFFFF) as u16;
-        if(addr & 0x1 == 1){
+        if addr & 0x1 == 1 {
             desired_dword = ((word as u32) << 16) + first_word as u32;
         }
         else{
@@ -82,14 +83,14 @@ impl <T: RAM_backed_flash, U: Read + WriteErase> Memory for RAM_backed_flash_mem
     //Since the page (block) size on board is 1K again need to do this read write transaction
     //TODO:  implement the commit_page method on RAM trait to ensure writing to flash.
     //       right now, it just writes to the regular RAM arrays and may not go to flash unless evicted
-    fn commit_page(&mut self, _page_idx: PageIndex, _page: &[Word; PAGE_SIZE_IN_WORDS as usize]) { 
+    fn commit_page(&mut self, _page_idx: PageIndex, _page: &[Word; PAGE_SIZE_IN_WORDS as usize]) {
         let mut write_buffer: [u32; 256] = [0; 256];
         let addr = ((_page_idx as usize)*512) & (!0x3FF);
         let mut ctrl_inst = self.RAM_backed_flash_controller.borrow_mut();
         write_buffer = ctrl_inst.read_page(addr);
         let RAM_modified_half_page_offset: usize = (((_page_idx as usize) & 0x1)*512) as usize;
 
-        for i in (0..(PAGE_SIZE_IN_WORDS/2)) {
+        for i in 0..(PAGE_SIZE_IN_WORDS/2) {
             write_buffer[(RAM_modified_half_page_offset/4) + i as usize] = (_page[(2*i) as usize] as u32) + ((_page[(2*i + 1) as usize] as u32) << 16) as u32;
         }
         ctrl_inst.write_page(addr, write_buffer);
@@ -123,7 +124,7 @@ impl <T: RAM_backed_flash, U: Read + WriteErase> IndexMut<Addr> for &'_ mut RAM_
 
 #[deny(unconditional_recursion)]
 impl <T: RAM_backed_flash, U: Read + WriteErase> Memory for &'_ mut RAM_backed_flash_memory <T, U> {
-    fn read_word(&self, addr: Addr) -> Word { 
+    fn read_word(&self, addr: Addr) -> Word {
         (&**self).read_word(addr)
     }
 
