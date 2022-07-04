@@ -30,7 +30,7 @@ lc3-isa = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", 
 lc3-traits = { git = "https://github.com/ut-utp/prototype.git", version = "0.1.0", default-features = false, features = ["no_std"]  }
 
 # tm4c123x-hal = { version = "0.9.0", features = ["rt"] }
-tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", version= "0.10.2" , features=["rt"], rev="90f49707d9dcc32bbce10bbf1ee286abeb7a285d" }
+tm4c123x-hal = { git = "https://github.com/ut-utp/tm4c-hal", branch = "utp-patches" , features=["rt"] }
 tm4c123x = "0.9.0"
 embedded-hal = "0.2.7"
 

@@ -83,6 +83,7 @@ use lc3_device_support::{
         encoding::{PostcardEncode, PostcardDecode, Cobs},
     },
     peripherals::adc::generic_adc_unit as GenericAdc,
+    peripherals::timer::generic_timer_unit as GenericTimer,
     util::Fifo,
 };
 
@@ -126,6 +127,9 @@ static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
 //     InputStub,
 //     OutputStub,
 // >;
+
+
+//GPIO Board specifics
 
 use tm4c123x_hal::gpio::{
     self as gp,
@@ -181,7 +185,27 @@ generic_gpio::io_pins_with_typestate! {
     }
 }
 
+//Timer board Specifics
+use tm4c123x_hal::timer::*;
+use tm4c123x_hal::time::*;
 
+pub struct MillisU16(Millis);
+
+impl Into<Millis> for MillisU16 {
+    fn into(self) -> Millis{
+        self.0
+    }
+}
+impl From<u16> for MillisU16{
+    fn from(val: u16) -> Self { MillisU16(u32::millis(val as u32)) }
+}
+
+impl Into<u16> for MillisU16{
+    fn into(self) -> u16{
+        self.0.0 as u16
+    }
+
+}
 
 
 #[entry]
@@ -244,7 +268,11 @@ fn main() -> ! {
         //         timer1,
         //     }
         // );
-        let timers = TimersStub;
+        let mut tm4c_timer0 = Timer::<tm4c123x::WTIMER0>::wtimer0(p.WTIMER0, MillisU16(Millis(54000)), &sc.power_control, &clocks);
+        let mut tm4c_timer1 = Timer::<tm4c123x::WTIMER1>::wtimer1(p.WTIMER1, MillisU16(Millis(54000)), &sc.power_control, &clocks);
+
+        let mut utp_timer = GenericTimer::<MillisU16, _, _, _>::new(tm4c_timer0, tm4c_timer1);
+        let timers = utp_timer;
 
         // let timer = p.TIMER2;
         // let clock = Tm4cClock::new(
