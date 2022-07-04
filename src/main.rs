@@ -279,8 +279,8 @@ fn main() -> ! {
         //         timer1,
         //     }
         // );
-        let mut tm4c_timer0 = Timer::<tm4c123x::WTIMER0>::wtimer0(p.WTIMER0, MillisU16(Millis(54000)), &sc.power_control, &clocks);
-        let mut tm4c_timer1 = Timer::<tm4c123x::WTIMER1>::wtimer1(p.WTIMER1, MillisU16(Millis(54000)), &sc.power_control, &clocks);
+        let mut tm4c_timer0 = Timer::<tm4c123x::WTIMER0>::wtimer0(p.WTIMER0, MillisU16(Millis(4)), &sc.power_control, &clocks);
+        let mut tm4c_timer1 = Timer::<tm4c123x::WTIMER1>::wtimer1(p.WTIMER1, MillisU16(Millis(4)), &sc.power_control, &clocks);
 
         let mut utp_timer = GenericTimer::<MillisU16, _, _, _>::new(tm4c_timer0, tm4c_timer1);
         let timers = utp_timer;
