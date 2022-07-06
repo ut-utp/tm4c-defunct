@@ -145,8 +145,8 @@ static FLAGS: PeripheralInterruptFlags = PeripheralInterruptFlags::new();
 use tm4c123x_hal::gpio::{
     self as gp,
     PushPull,
-    PullDown,
-    gpiof::{self, PF1, PF2, PF3},
+    PullUp,
+    gpiof::{self, PF1, PF2, PF3, PF4},
     gpiob::{self, PB3, PB4, PB5, PB6, PB7},
 };
 
@@ -158,7 +158,7 @@ generic_gpio::io_pins_with_typestate! {
         /// ... (red)
         PF1 as G0,
         /// ... (blue)
-        PF2 as G1,
+        PF4 as G1,
         /// ... (green)
         PF3 as G2,
         /// ...
@@ -177,11 +177,11 @@ generic_gpio::io_pins_with_typestate! {
     type Error = Infallible;
 
     type Disabled = gp::Tristate;
-    type Input = gp::Input<PullDown>;
+    type Input = gp::Input<PullUp>;
     type Output = gp::Output<PushPull>;
 
     => disabled = |x, ()| Ok(x.into_tri_state())
-    => input    = |x, ()| Ok(x.into_pull_down_input())
+    => input    = |x, ()| Ok(x.into_pull_up_input())
     => output   = |x, ()| Ok(x.into_push_pull_output())
 
     => enable  interrupts = |inp, ()| Ok(inp.set_interrupt_mode(gp::InterruptMode::EdgeRising))
@@ -237,7 +237,7 @@ fn main() -> ! {
     let peripheral_set = {
         let portf = p.GPIO_PORTF;
         let portb = p.GPIO_PORTB;
-        let gpiof::Parts { pf1: g0, pf2: g1, pf3: g2, .. } = portf.split(&sc.power_control);
+        let gpiof::Parts { pf1: g0, pf4: g1, pf3: g2, .. } = portf.split(&sc.power_control);
         let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
         let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7);
 
