@@ -146,7 +146,7 @@ use tm4c123x_hal::gpio::{
     self as gp,
     PushPull,
     PullUp,
-    gpiof::{self, PF1, PF2, PF3, PF4},
+    gpiof::{self, PF0, PF1, PF2, PF3, PF4},
     gpiob::{self, PB3, PB4, PB5, PB6, PB7},
 };
 
@@ -156,15 +156,15 @@ generic_gpio::io_pins_with_typestate! {
 
     for pins {
         /// ... (red)
-        PF1 as G0,
+        PF0 as G0,
         /// ... (blue)
-        PF4 as G1,
+        PF1 as G1,
         /// ... (green)
-        PF3 as G2,
+        PF2 as G2,
         /// ...
-        PB3 as G3,
+        PF3 as G3,
         /// ...
-        PB4 as G4,
+        PF4 as G4,
         /// ...
         PB5 as G5,
         /// ...
@@ -235,11 +235,13 @@ fn main() -> ! {
     let u0 = p.UART0;
     // Peripheral Init:
     let peripheral_set = {
-        let portf = p.GPIO_PORTF;
+        let mut portf = p.GPIO_PORTF.split(&sc.power_control);
+        let mut pf0 = portf.pf0.unlock(&mut portf.control);  //pf0 is special pin to be unlocked
         let portb = p.GPIO_PORTB;
-        let gpiof::Parts { pf1: g0, pf4: g1, pf3: g2, .. } = portf.split(&sc.power_control);
-        let gpiob::Parts { pb3: g3, pb4: g4, pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
-        let gpio = Tm4cGpio::new(g0, g1, g2, g3, g4, g5, g6, g7);
+
+        let gpiof::Parts { pf1: g1, pf2: g2, pf3: g3, pf4: g4, .. } = portf;
+        let gpiob::Parts { pb5: g5, pb6: g6, pb7: g7, .. } = portb.split(&sc.power_control);
+        let gpio = Tm4cGpio::new(pf0, g1, g2, g3, g4, g5, g6, g7);
 
 
         let porte = p.GPIO_PORTE.split(&sc.power_control);
